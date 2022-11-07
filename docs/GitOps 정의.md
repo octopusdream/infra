@@ -34,7 +34,7 @@ GitOps는 모든 인프라 업데이트에 대한 change mechanism으로 merge 
 
 MR은 팀이 검토 및 의견을 통해 협업할 수 있는 곳이며 공식 승인이 이루어지는 곳이다.
 
-merge는 main branch에 커밋되고 audit log 로 제공한다.
+merge는 main branch에 커밋되고 audit log 로 제공한다. 
 
 ### **CI/CD**
 
