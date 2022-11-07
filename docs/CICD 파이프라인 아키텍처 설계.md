@@ -1,4 +1,4 @@
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/d28abeb3-4f4a-4788-8adf-c414a7b161ab/Untitled.png)
+![image](https://user-images.githubusercontent.com/93571332/200238132-22db955c-edf2-47a2-9470-639394041869.png)
 
 위에는, 프로젝트 구현 들어가기 전 간단하게 설계해본 CI/CD 아키텍처이다. 당연히, 추후에 수정이 있을 수 있다. 
 
