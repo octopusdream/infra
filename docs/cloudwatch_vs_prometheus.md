@@ -25,7 +25,7 @@ CloudWatch는 AWS 서비스로서 인프라시스템과 애플리케이션을 �
 
 가장 큰 차이점은 컨테이너와 파드에 대한 모니터링 가능 여부였다.
 
-[CloudWatch vs Prometheus](https://www.infracloud.io/blogs/prometheus-vs-cloudwatch/) 글에 따르면 2018년 까지는 CloudWatch를 사용하여 직접적으로 컨테이너와 파드에 대한 모니터링을 할 수 없었다. 하지만 현재 [AWS 문서](https://aws.amazon.com/ko/cloudwatch/) 를 참고하면 CloudWatch의 Container Insights를 사용해 모니터링 할 수 있다.
+[CloudWatch vs Prometheus](https://www.infracloud.io/blogs/prometheus-vs-cloudwatch/) 글에 따르면 2018년 까지는 CloudWatch를 사용하여 직접적으로 컨테이너와 파드에 대한 모니터링을 할 수 없었다. 하지만 현재 [AWS 문서](https://docs.aws.amazon.com/ko_kr/AmazonCloudWatch/latest/monitoring/ContainerInsights.html) 를 참고하면 CloudWatch의 Container Insights를 사용해 모니터링 할 수 있다.
 >
 CloudWatch **Container Insights**를 사용해 컨테이너화된 애플리케이션 및 마이크로서비스의 지표 및 로그를 수집하고 집계하며 요약할 수 있다. Container Insights는 Amazon Elastic Container Service(Amazon ECS), Amazon Elastic Kubernetes Service(Amazon EKS), Amazon EC2의 Kubernetes 플랫폼에서 사용할 수 있다. 
 
@@ -41,7 +41,7 @@ EC2 인스턴스를 사용할 때 인터넷을 사용하는 비용은 **GB 당 0
 ### CloudWatch
 
 
-**Metrics**: Amazon EC2 세부 모니터링 요금은 사용자 지정 **지표 수**를 기준으로 책정되며 지표 전송에 대한 ** API 요금** 은 없다. 
+**Metrics**: Amazon EC2 세부 모니터링 요금은 사용자 지정 **지표 수**를 기준으로 책정되며 지표 전송에 대한 **API 요금** 은 없다. 
 
 **Dashboard**: 대시보드당 월별 3$
 
@@ -53,7 +53,7 @@ CloudWatch **Container Insights**는 CloudWatch 지표를 자동으로 만드는
 ![](https://velog.velcdn.com/images/hyunshoon/post/9a9aabac-9a60-471d-86de-9ab86d40cd2a/image.png)
 
 
-Container Insights를 사용하여 컨테이너 및 파드를 모니터링하는데, 데이터 수집 비용이 **GB 당 0.76 USD** 다. 프로메테우스의 각 AZ에서 ISP를 거쳐 데이터를 전송하는데 발생하는 비용인 **GB 당 0.126$** 달러보다 비싸다. ISP를 거친 데이터 전송비용이 우려요소였다는 점에서 비용 때문에 CloudWatch를 쓸 필요는 없어보인다.
+Container Insights를 사용하여 컨테이너 및 파드를 모니터링하는데, 데이터 수집 비용이 **GB 당 0.76 USD** 다. 프로메테우스의 각 AZ에서 ISP를 거쳐 데이터를 전송하는데 발생하는 비용인 **GB 당 0.126 USD** 보다 비싸다. ISP를 거친 데이터 전송비용이 우려요소였다는 점에서 비용 때문에 CloudWatch를 쓸 필요는 없어보인다.
 
 
 ### 추가할 부분
