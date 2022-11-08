@@ -74,5 +74,4 @@ EndPoint 서비스에 필요한 VPC EndPoint 유형을 생성해야 한다.
 
 <aside>
 💡 AWS에서 서비스 운영 시 Private subnet 에 위치한 인스턴스가 VPC 외부의 AWS 서비스를 이용하고자 할 때 NAT Gateway 가 아닌 VPC Endpoint 를 사용하면 비용을 줄일 수 있다.
-
 </aside>
