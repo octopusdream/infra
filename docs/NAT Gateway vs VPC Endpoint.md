@@ -37,7 +37,7 @@ VPC 에 NAT Gateway 를 생성하는 경우, 프로비저닝되고 사용 가능
 
 ### **VPC Endpoint**
 
-VPC Endpoint 는 ****private subnet 에 위치한 인스턴스가 AWS 서비스에 연결할 때에 NAT Gateway 를 사용하는 대신 사용하려는 AWS 서비스와의 통신을 담당하는 접점을 만들어서 연결하도록 하는 VPC 구성 요소이다.
+VPC Endpoint 는 private subnet 에 위치한 인스턴스가 AWS 서비스에 연결할 때에 NAT Gateway 를 사용하는 대신 사용하려는 AWS 서비스와의 통신을 담당하는 접점을 만들어서 연결하도록 하는 VPC 구성 요소이다.
 
 > 하나의 VPC Endpoint 에는 하나의 서비스만 지정할 수 있다.
 > 
