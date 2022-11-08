@@ -9,18 +9,18 @@
 - git 으로 작업하면서 pull로 내용을 가져오지 않고 작업한다면 전에 존재하던 `terraform.tfstate` 의 내용을 덮어쓰면서 충돌이 발생할 수 있다.
 
 따라서 terraform 에서는 tfstate 파일을 원격으로 관리하는 방법을 제공한다. 
-
 [State: Remote Storage | Terraform | HashiCorp Developer](https://developer.hashicorp.com/terraform/language/state/remote)
 
-tfstate 파일에는 민감한 정보가 포함될 수 있으므로 공개된 장소에서는 관리하지 않도록 권장한다.
 
+- tfstate 파일에는 민감한 정보가 포함될 수 있으므로 공개된 장소에서는 관리하지 않도록 권장한다.
 [State: Sensitive Data | Terraform | HashiCorp Developer](https://developer.hashicorp.com/terraform/language/state/sensitive-data)
 
+
 - AWS S3에서 tfstate 관리
-
 [Backend Configuration - Configuration Language | Terraform | HashiCorp Developer](https://developer.hashicorp.com/terraform/language/settings/backends/configuration)
-
 현재 원격 백엔드로는 Azure, Consul, etcd, AWS S3, Terraform Enterprise, Google Cloud Storage를 지원하고 있다.
+
+-----
 
 ### lock 테이블
 
@@ -45,6 +45,8 @@ resource "aws_dynamodb_table" "terraform_state_lock" {
 
 먼저 DynamoDB 에 테이블을 만들어준다. 이 테이블은 S3 에서 tfstate 파일을 관리하면서 동시에 작업이 일어나지 않도록 하는 lock 테이블이다. lock 을 사용할지는 선택 사항이지만 원격으로 상태 파일을 관리하므로 동시에 작업하면서 인프라에 문제가 생기지 않도록 lock 테이블을 만들면 `plan` 이나 `apply` 를 할 때 먼저 lock 이 걸리고, 작업이 끝나면 lock 이 해제된다.
 
+-----
+
 ### log 버킷
 
 로그 데이터를 저장할 S3 버킷을 생성한다. 이는 `terraform.tfstate` 용 S3 버킷에서 로깅을 켜서 누가 접근해서 작업했는지 알 수 있도록 여기에 기록을 남긴다. 
@@ -57,6 +59,8 @@ resource "aws_s3_bucket" "logs" {
 }
 ```
 
+-----
+
 ### acl
 
 Amazon S3 ACL(액세스 제어 목록)을 사용하면 버킷 및 객체에 대한 액세스를 관리할 수 있다.
@@ -66,6 +70,8 @@ Amazon S3 ACL(액세스 제어 목록)을 사용하면 버킷 및 객체에 대�
 [Access control list (ACL) overview](https://docs.aws.amazon.com/AmazonS3/latest/userguide/acl-overview.html#canned-acl)
 
 • **`[acl](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket#acl)`**- 적용할 acl 이다. 유효한 값은 **`private`**, **`public-read`**, **`public-read-write`**, **`aws-exec-read`**, **`authenticated-read`**및 **`log-delivery-write`**입니다. 기본 값은 **`private`** 이다. 
+
+-----
 
 ### Terraform state 저장용 버킷
 
@@ -118,6 +124,8 @@ S3의 버전 관리를 키면 `terraform.tfstate` 파일을 변경할 때마다 
 
 ```
 
+-----
+
 ### backend 추가
 
 [Backend Type: s3 | Terraform | HashiCorp Developer](https://developer.hashicorp.com/terraform/language/settings/backends/s3)
@@ -148,6 +156,8 @@ terraform {
 
 `encrypt` 를 설정해 [S3의 암호화 기능](https://docs.aws.amazon.com/ko_kr/AmazonS3/latest/dev/UsingServerSideEncryption.html)을 사용하도록 해준다. 암호화해서 저장하므로 혹시나 유출됐을 때 문제를 막을 수 있다.
 
+-----
+
 ### terraform plan
 
 `terraform` 키워드를 이용한 백엔드 설정이 있으면 Terraform은 `terraform.tfstate`를 로컬에서 관리하지 않고 원격에서 관리한다고 생각한다. 그래서 `terraform plan`을 실행하면 오류가 난다.
@@ -166,3 +176,23 @@ terraform {
 ```
 
 이는 terraform 설정을 초기화해주어야한다는 것이므로 `terraform init` 을 사용해 초기화해주면 된다. 로컬에서 `terraform.tfstate`를 관리하고 있었다면 이를 백엔드로 올리면서 초기화를 하고 이미 원격에서 관리하는 Terraform 설정을 다운 받았다면 이 설정을 초기화하는 과정이 이루어진다.
+
+-----
+
+### error
+
+[Amazon S3용 엔드포인트](https://docs.aws.amazon.com/ko_kr/vpc/latest/privatelink/vpc-endpoints-s3.html)
+
+```bash
+PS C:\Users\user\Desktop\terraform> terraform init   
+
+Initializing the backend...
+Error refreshing state: BucketRegionError: incorrect region, the bucket is not in 'ap-northeast-2' 
+region at endpoint '', bucket is in 'us-east-2' region
+        status code: 301, request id: MM4M1WQ5XKNJATM8, host id: nsGHgzP6wU+lj4niA5/KNKj4Fbhh05l4e4GAl4EX0qqxMxHDvBpp8ubRdc9tPtZZuVA1FbWE/3c=
+```
+
+- 코드 상의 리전과 버킷이 위치한 리전이 달라서 생긴 문제 ([https://www.notion.so/tfstate-lock-d1b45cfec38c4c428391430c2720319d#cd9b7a69e9b6493ba73233f9df735238](https://www.notion.so/tfstate-lock-d1b45cfec38c4c428391430c2720319d))
+
+- endpoint 를 설정해주고 다시
+
