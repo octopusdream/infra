@@ -9,6 +9,8 @@ Please retry your request by not specifying an Availability Zone or choosing ap-
 
 - 요약하자면 해당 Availability Zone(가용 영역)에는 해당하는 ec2(instance) 유형을 지원하지 않는다.
 
+---
+
 ### 🤔 Availability Zone 별 지원하는 ec2 유형
 - 그렇다면 어떤 Availability Zone(가용 영역)에서 어떤 ec2(instance) 유형을 지원하는지 확인을 해보자
 
@@ -39,6 +41,8 @@ Please retry your request by not specifying an Availability Zone or choosing ap-
 
 ⑥ 가용 영역: ap-northeast-2c
 - t2, t3, c4, c5 계열 등
+
+---
 
 ### 💡 결론
 - t2.micro는 대표적으로 Availability Zone(a,c)에서만 지원한다.
