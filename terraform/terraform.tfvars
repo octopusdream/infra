@@ -1,5 +1,4 @@
 
-
 # cidr_block
 aws_vpc_cidr_block = "10.0.0.0/16"
 aws_puba_subnet_cidr_block = "10.0.0.0/24"

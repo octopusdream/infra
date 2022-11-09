@@ -1,18 +1,4 @@
-variable "aws_bastion_size" {
-  description = "EC2 Instance Size of Bastion Host"
-}
 
-variable "aws_bastion_num" {
-  description = "EC2 Instance num of Bastion Host"
-}
-
-variable "aws_master_size" {
-  description = "EC2 Instance Size of Master Host"
-}
-
-variable "aws_master_num" {
-  description = "EC2 Instance num of Master Host"
-}
 
 ##################cidr_block#################
 # vpc cidr_block
