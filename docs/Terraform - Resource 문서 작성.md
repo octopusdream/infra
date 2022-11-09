@@ -203,10 +203,10 @@ resource "aws_instance" "kakao_ec2"
   - EC2 resource는 S3 resource에 대한 dependency를 가지고 있음을 terraform에게 명시적으로 알려주는 것이다.
   - 그렇기 때문에 S3를 먼저 생성한 후 EC2를 생성하여 user_data를 적용한다.  
     - depends_on을 설정하게 되면 지정된 리소스가 생성될 때까지 종속 리소스 생성을 기다리므로 terraform이 인프라를 생성하는데 걸리는 시간이 늘어날 수 있다.
-- ※ 그렇다면 terraform resource를 생성할때 전부 dependency를 고려하여 depends_on을 추가해야 하는가? 
-  - 그렇지 않다. 
+- ❓❗ 그렇다면 terraform resource를 생성할때 전부 dependency를 고려하여 depends_on을 추가해야 하는가❓
+  - 그렇지 않다❗ . 
   - terraform은 암시적 종속성에 따라 자동으로 bucket이 EC2에 대한 dependency를 가지고 있음을 알고, bucket을 생성한 후 에 EC2를 생성하게 된다.
-  - 이해가 되지 않는다면 'Terraform 리소스 종속성'을 다시 읽어보자!!   
+  - 이해가 되지 않는다면 'Terraform 리소스 종속성'을 다시 읽어보자❗❗  
 ### count
 - 일반적으로 resource block을 통해 resource를 생성하면 1개의 resource가 생성된다.
 - 동일한 resource block으로 여러 개의 동일한 resource type을 생성하고 싶을 때 사용한다.
