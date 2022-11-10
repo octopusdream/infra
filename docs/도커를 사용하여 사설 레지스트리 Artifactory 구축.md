@@ -82,3 +82,6 @@ admin/password 로 로그인 가능
 [https://jfrog.com/knowledge-base/how-to-install-jfrog-artifactory-with-docker-video/](https://jfrog.com/knowledge-base/how-to-install-jfrog-artifactory-with-docker-video/)
 
 [https://jfrog.com/blog/how-to-set-up-a-private-remote-and-virtual-docker-registry/](https://jfrog.com/blog/how-to-set-up-a-private-remote-and-virtual-docker-registry/)
+
+### 마무리
+But, 사설 docker registry는 유료 Pro 버전에서만 지원이 된다...
