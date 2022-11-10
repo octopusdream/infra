@@ -1,14 +1,5 @@
-# eip 생성 후 ec2 연결
-resource "aws_eip" "bastion1" {
-  instance = aws_instance.bastion1.id
-  vpc      = true
-  tags = {
-    Name = "kakao-bastion1-eip"
-  }
-}
 
-
-resource "aws_instance" "bastion1" {
+resource "aws_instance" "bastion" {
   #count = 3
   ami = "ami-0e9bfdb247cc8de84"
   instance_type = var.aws_bastion_size
@@ -18,7 +9,7 @@ resource "aws_instance" "bastion1" {
   availability_zone = var.aws_availability_zone_a
  
   tags = {
-    Name = "bastion-a"
+    Name = "bastion"
   }
 }
 
@@ -51,28 +42,6 @@ resource "aws_instance" "worker1" {
   }
 }
 
-# eip 생성 후 ec2 연결
-resource "aws_eip" "bastion2" {
-  instance = aws_instance.bastion2.id
-  vpc      = true
-  tags = {
-    Name = "kakao-bastion2-eip"
-  }
-}
-
-
-resource "aws_instance" "bastion2" {
-  ami = "ami-0e9bfdb247cc8de84"
-  instance_type = var.aws_bastion_size
-  vpc_security_group_ids = [aws_security_group.kakao_http.id]
-  subnet_id = aws_subnet.kakao_pub_b.id
-  key_name = "kakaokey"
-  availability_zone = var.aws_availability_zone_b
- 
-  tags = {
-    Name = "bastion-b"
-  }
-}
 
 resource "aws_instance" "master2" {
   ami = "ami-0e9bfdb247cc8de84"
@@ -100,30 +69,6 @@ resource "aws_instance" "worker2" {
  
   tags = {
     Name = "worker-b-${count.index + 1}"
-  }
-}
-
-# eip 생성 후 ec2 연결
-resource "aws_eip" "bastion3" {
-  instance = aws_instance.bastion3.id
-  vpc      = true
-  tags = {
-    Name = "kakao-bastion3-eip"
-  }
-}
-
-
-resource "aws_instance" "bastion3" {
-  ami = "ami-0e9bfdb247cc8de84"
-  instance_type = var.aws_bastion_size
-  vpc_security_group_ids = [aws_security_group.kakao_http.id]
-  subnet_id = aws_subnet.kakao_pub_c.id
-  key_name = "kakaokey"
-  availability_zone = var.aws_availability_zone_c
-  
- 
-  tags = {
-    Name = "bastion-c"
   }
 }
 
