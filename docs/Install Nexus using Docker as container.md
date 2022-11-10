@@ -29,7 +29,7 @@ root@master:~# cat /data/admin.password
 bdb8744c-7cbd-46c4-a0e3-d6645288c3d1
 ```
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/f9adfb25-1751-4fea-80d2-c036ad3624d7/Untitled.png)
+![image](https://user-images.githubusercontent.com/93571332/201015996-9775c3ee-5db3-43c1-99f6-1fb588b53f80.png)
 
 ![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/93f5c854-5d68-4537-960b-1f29e4827183/Untitled.png)
 
