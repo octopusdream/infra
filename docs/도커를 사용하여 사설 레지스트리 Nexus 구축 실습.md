@@ -29,27 +29,27 @@ root@master:~# cat /data/admin.password
 bdb8744c-7cbd-46c4-a0e3-d6645288c3d1
 ```
 
-![image](https://user-images.githubusercontent.com/93571332/201015996-9775c3ee-5db3-43c1-99f6-1fb588b53f80.png)
+![image](https://user-images.githubusercontent.com/93571332/201016163-08a5c54c-57c1-481d-90a3-a535b8d6895a.png)
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/93f5c854-5d68-4537-960b-1f29e4827183/Untitled.png)
+![image](https://user-images.githubusercontent.com/93571332/201016199-cacc9a46-d3c3-4fd9-b9c3-4bc66c6755dc.png)
 
 admin 비밀번호 재설정 (Test$123)
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/a3c90bf1-0551-40fb-8a27-fc56999b78b8/Untitled.png)
+![image](https://user-images.githubusercontent.com/93571332/201016237-4d155a1f-ce9b-4872-8f7f-629517630110.png)
 
 anonymous 계정 활성화
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/8e1211ad-6784-4526-9962-487a96360a77/Untitled.png)
+![image](https://user-images.githubusercontent.com/93571332/201016276-b72d3378-96b5-46fa-9e17-cda147ef6918.png)
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/27a46b4d-83b7-40a8-993a-093f94798864/Untitled.png)
+![image](https://user-images.githubusercontent.com/93571332/201016302-f9bfb201-3047-429a-900f-3307c38cea02.png)
 
 ### 사설 컨테이너 이미지 저장소 생성
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/a5167658-73f0-4690-9485-1132aaf835f9/Untitled.png)
+![image](https://user-images.githubusercontent.com/93571332/201016450-09a790dc-7919-4850-a745-adc1f482f1c2.png)
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/9020c064-7c26-465b-bb09-fdc15d613816/Untitled.png)
+![image](https://user-images.githubusercontent.com/93571332/201016473-f73a228a-1332-4edf-b044-96f46781b43c.png)
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/f15dc133-07e2-4149-abc1-f9c31c4474eb/Untitled.png)
+![image](https://user-images.githubusercontent.com/93571332/201016491-4aa9252c-da4d-43c3-a395-c308ee5960f8.png)
 
 Repository 이름 지정하고, Repository에 사용할 Port 지정
 
@@ -57,9 +57,9 @@ HTTPS Port, Docker V1 API 활성화, 익명 사용자 Pull 권한 등 설정
 
 (anonymous Pull 기능 필요하다면, Realms 에서 Docker Bearer Token Realm 추가)
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/97135399-9a6c-4419-99a2-b3104474d15b/Untitled.png)
+![image](https://user-images.githubusercontent.com/93571332/201016535-2bc5d435-0988-4856-a042-197004be44d1.png)
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/c1534838-7931-4a84-a317-63d004202fa6/Untitled.png)
+![image](https://user-images.githubusercontent.com/93571332/201016546-b26144d4-e2ac-49e5-aeed-45dff99680a3.png)
 
 ### 컨테이너 이미지 push
 
@@ -98,7 +98,7 @@ root@master:~# docker push 192.168.8.100:5001/green:1.0
 
 UI에서 확인
 
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/c1d9717f-6750-48e7-86e0-5570f49fcf33/Untitled.png)
+![image](https://user-images.githubusercontent.com/93571332/201016590-d364190c-8de8-4e07-b399-4b74839404a2.png)
 
 ### 참고
 
