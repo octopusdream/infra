@@ -40,6 +40,20 @@ resource "aws_instance" "worker1" {
   tags = {
     Name = "worker-a-${count.index + 1}"
   }
+
+  user_data = <<-EOF
+    #!/bin/bash   
+    sudo su -
+    sudo mkdir /efs
+    sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport ${aws_efs_file_system.kakao_efs.dns_name}:/ /efs
+    df -h
+    touch /efs/kakao
+    ls /efs
+    EOF
+
+  depends_on = [
+    aws_efs_mount_target.kakao_a_mount
+  ]
 }
 
 
@@ -70,6 +84,20 @@ resource "aws_instance" "worker2" {
   tags = {
     Name = "worker-b-${count.index + 1}"
   }
+
+  user_data = <<-EOF
+    #!/bin/bash   
+    sudo su -
+    sudo mkdir /efs
+    sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport ${aws_efs_file_system.kakao_efs.dns_name}:/ /efs
+    df -h
+    touch /efs/kakao
+    ls /efs
+    EOF
+
+  depends_on = [
+    aws_efs_mount_target.kakao_b_mount
+  ]
 }
 
 resource "aws_instance" "master3" {
@@ -99,4 +127,18 @@ resource "aws_instance" "worker3" {
   tags = {
     Name = "worker-c-${count.index + 1}"
   }
+
+  user_data = <<-EOF
+    #!/bin/bash   
+    sudo su -
+    sudo mkdir /efs
+    sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport ${aws_efs_file_system.kakao_efs.dns_name}:/ /efs
+    df -h
+    touch /efs/kakao
+    ls /efs
+    EOF
+
+  depends_on = [
+    aws_efs_mount_target.kakao_c_mount
+  ]
 }

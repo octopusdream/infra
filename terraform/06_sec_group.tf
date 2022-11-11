@@ -60,6 +60,17 @@ resource "aws_security_group_rule" "allow_kubelet_ingress" {
     description = "kubelet from VPC"
 }
 
+# efs
+resource "aws_security_group_rule" "allow_efs_ingress" {
+    type              = "ingress"
+    from_port         = 2049
+    to_port           = 2049
+    protocol          = "tcp"
+    cidr_blocks       = ["0.0.0.0/0"]
+    security_group_id = aws_security_group.kakao_http.id
+    description = "efs from VPC"
+}
+
 # etcd
 resource "aws_security_group_rule" "allow_etcd_ingress" {
     type              = "ingress"
