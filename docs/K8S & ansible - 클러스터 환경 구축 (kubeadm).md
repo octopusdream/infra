@@ -208,10 +208,9 @@ sudo systemctl restart kubelet.service
 
 - 해결
 
-<aside>
+```
 💡 최신 버전의 K8S 에서는 Docker 와 관련된 CRI 중에서 Dockerd 가 사라지고, Containerd 만 남았다. 따라서 K8S는 1.21 버전으로 설치해야 한다.
-
-</aside>
+```
 
 ---
 
