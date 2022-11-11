@@ -10,4 +10,5 @@ resource "aws_route_table" "kakao_pub_rt" {
     tags = {
       "Name" = "kakao-pub-rt"
     }
+    depends_on = [aws_internet_gateway.kakao_igw]
 }

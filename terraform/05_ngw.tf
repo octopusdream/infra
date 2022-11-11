@@ -1,32 +1,10 @@
-# NAT 게이트웨이가 사용할 Elastic IP생성
-resource "aws_eip" "kakao_ngw_puba_ip" {
-  vpc      = true  #생성 범위 지정
-  depends_on = [
-    aws_internet_gateway.kakao_igw
-  ]
-}
-
-resource "aws_eip" "kakao_ngw_pubb_ip" {
-  vpc      = true  #생성 범위 지정
-  depends_on = [
-    aws_internet_gateway.kakao_igw
-  ]
-}
-
-resource "aws_eip" "kakao_ngw_pubc_ip" {
-  vpc      = true  #생성 범위 지정
-  depends_on = [
-    aws_internet_gateway.kakao_igw
-  ]
-}
-
 # NAT 게이트웨이 생성
 resource "aws_nat_gateway" "kakao_ngw_pria" {
   allocation_id = aws_eip.kakao_ngw_puba_ip.id #EIP 연결
   subnet_id     = aws_subnet.kakao_pub_a.id #NAT가 사용될 서브넷 지정
 
   tags = {
-    Name = "kakao-NAT-a"
+    Name = "kakao-NAT-S"
   }
   depends_on = [
     aws_internet_gateway.kakao_igw
