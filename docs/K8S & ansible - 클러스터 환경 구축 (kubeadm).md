@@ -251,7 +251,7 @@ BIRD는 `calico`에서 노드 별로 네트워크 라우팅 정보를 갱신한
 
 → 안됨
 
-- 해결
+- 해결1
 
 <aside>
 💡 calico 대신에 weave-net 사용한다.
@@ -261,6 +261,23 @@ BIRD는 `calico`에서 노드 별로 네트워크 라우팅 정보를 갱신한
 [클러스터 네트워킹](https://kubernetes.io/ko/docs/concepts/cluster-administration/networking/)
 
 [위브넷](https://www.weave.works/oss/net/)은 쿠버네티스 및 호스팅된 애플리케이션을 위한 탄력적이고 사용하기 쉬운 네트워크이다. 위브넷은 [CNI 플러그인](https://www.weave.works/docs/net/latest/cni-plugin/) 또는 독립형으로 실행된다. 두 버전에서, 실행하기 위해 구성이나 추가 코드가 필요하지 않으며, 두 경우 모두, 쿠버네티스의 표준과 같이 네트워크에서 파드별로 하나의 IP 주소를 제공한다.
+
+- 해결2
+
+<aside>
+💡 [calico 설치](https://projectcalico.docs.tigera.io/getting-started/kubernetes/self-managed-onprem/onpremises)
+클러스터에 연산자를 설치 → Calico 구성에 필요한 사용자 지정 리소스 다운로드(Calico 설치를 사용자 지정하려면 다운로드한 custom-resources.yaml 매니페스트를 로컬로 사용자 지정) → Calico를 설치하기 위해 매니페스트를 생성 → Calico 설치
+
+</aside>
+
+```bash
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.24.5/manifests/tigera-operator.yaml
+curl https://raw.githubusercontent.com/projectcalico/calico/v3.24.5/manifests/custom-resources.yaml -O
+kubectl create -f custom-resources.yaml
+kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+
+kubectl get pod -n kube-system
+```
 
 ---
 
