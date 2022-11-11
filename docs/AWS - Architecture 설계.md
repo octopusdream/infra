@@ -14,7 +14,7 @@
 
 아래 이미지는 템플릿의 아키텍처 디자인을 나타낸다.
 
-![image](https://user-images.githubusercontent.com/72699541/200768697-22e2e536-f724-415f-865f-5eb75d33e23f.png)
+![image](https://user-images.githubusercontent.com/72699541/201289140-07e0726e-6cc2-42cc-8953-781a9bc81b6d.png)
 
 
 다음 설계는, 3개의 AZ(Availability Zone)가 존재하고, 각각의 존에 프라이빗 서브넷과 퍼블릭 서브넷이 있는 VPC 를 생성한다.
