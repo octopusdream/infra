@@ -165,7 +165,7 @@ export KUBECONFIG=/etc/kubernetes/admin.conf
 
 ```bash
 # master
-kubectl apply -f [https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml](https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml)
+kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
 ```
 
 - worker 노드 join 해주고 확인
