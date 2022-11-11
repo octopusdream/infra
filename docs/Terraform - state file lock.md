@@ -22,7 +22,7 @@ terraform.tfstate - terraform apply 명령어 실행 후 생성된다.
 [Backend Configuration - Configuration Language | Terraform | HashiCorp Developer](https://developer.hashicorp.com/terraform/language/settings/backends/configuration)
 기본적으로 로컬 스토리지에 저장을 하지만, 설정에 따라서 zure, Consul, etcd, AWS S3, Terraform Enterprise, Google Cloud Storage 등 다양한 원격 Backend 타입을 사용할 수 있다.
 ### Terraform Backend 사용 이유
-![캡처](https://user-images.githubusercontent.com/72699541/200494927-023c5d80-cc5b-49be-82a5-78b900690a62.PNG)
+![image](https://user-images.githubusercontent.com/72699541/201298170-5aa68b78-d893-4c97-9776-584ac437c0d3.png)
 - Locking
   - 동시에 두 사람이 작업을 하는 경우에 `terraform.tfstate` 가 달라지며 충돌이 발생할 수 있다. 이는 파일의 충돌만이 아니라 인프라에도 영향을 줄 수 있다.
   - git 으로 작업하면서 pull로 내용을 가져오지 않고 작업한다면 전에 존재하던 `terraform.tfstate` 의 내용을 덮어쓰면서 충돌이 발생할 수 있다.
