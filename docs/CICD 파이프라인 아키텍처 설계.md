@@ -6,6 +6,8 @@ Github, Jenkins, Dockerhub, Helm 을 사용하여 CI 를 파트를 구현하고,
 
 추가적으로, 쿠버네티스의 경우 실제로 사용해보면 pod 가 잘 배포가 안된다든지, 이미지가 문제가 생기는지 등 다양한 오류를 만날 수 있다. 이러한 경우 보다 더 쉽게 트러블 슈팅을 할 수 있게 하기 위해 로깅 시스템으로 EFK(Fluentd + Elasticsearch + Kibana)를 쿠버네티스 클러스터 상에 구현할 예정이다.
  
-
 ## 1차 수정 아키텍처
 ![image](https://user-images.githubusercontent.com/93571332/200776206-fa5fd69d-3a53-45c0-a337-21670c6464ae.png)
+
+## 2차 수정 아키텍처
+![image](https://user-images.githubusercontent.com/93571332/201278352-27617ab6-5397-40bc-8c5d-3b4c78162f96.png)
