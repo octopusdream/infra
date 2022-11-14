@@ -201,7 +201,5 @@ region at endpoint '', bucket is in 'us-east-2' region
 
 - 코드 상의 리전과 버킷이 위치한 리전이 달라서 생긴 문제 ([https://www.notion.so/tfstate-lock-d1b45cfec38c4c428391430c2720319d#cd9b7a69e9b6493ba73233f9df735238](https://www.notion.so/tfstate-lock-d1b45cfec38c4c428391430c2720319d))
 
-- endpoint 를 설정해주고 다시
-
 
 
