@@ -1,7 +1,7 @@
 # EFS 파일 시스템 생성
-resource "aws_efs_file_system" "kakao_efs" {
+resource "aws_efs_file_system" "efs" {
   # 원존 클래스를 이용할 경우
-  # availability_zone_name = "ap-northeast-2a"
+  # availability_zone_name = var.AZ_a
 
   # 유휴 시 데이터 암호화
   encrypted = true
@@ -17,7 +17,7 @@ resource "aws_efs_file_system" "kakao_efs" {
   # throughput_mode = "provisioned"
   # provisioned_throughput_in_mibps = 100
   tags = {
-    Name = "kakao-efs"
+    Name = "${var.alltag}-efs"
   }
 
   # 수명 주기 관리
@@ -27,20 +27,20 @@ resource "aws_efs_file_system" "kakao_efs" {
 }
 
 # 표준 클래스로 EFS를 생성하더라도 탑재 대상은 모든 가용영역에 수동으로 지정해주어야 합니다. 
-resource "aws_efs_mount_target" "kakao_a_mount" {
-  file_system_id  = aws_efs_file_system.kakao_efs.id
-  subnet_id       = aws_subnet.kakao_pub_a.id
-  security_groups = [aws_security_group.kakao_http.id] 
+resource "aws_efs_mount_target" "a_mount" {
+  file_system_id  = aws_efs_file_system.efs.id
+  subnet_id       = var.public_a_subnet_id
+  security_groups = [var.sg_id] 
 }
 
-resource "aws_efs_mount_target" "kakao_b_mount" {
-  file_system_id  = aws_efs_file_system.kakao_efs.id
-  subnet_id       = aws_subnet.kakao_pub_b.id
-  security_groups = [aws_security_group.kakao_http.id] 
+resource "aws_efs_mount_target" "b_mount" {
+  file_system_id  = aws_efs_file_system.efs.id
+  subnet_id       = var.public_b_subnet_id
+  security_groups = [var.sg_id]
 }
 
-resource "aws_efs_mount_target" "kakao_c_mount" {
-  file_system_id  = aws_efs_file_system.kakao_efs.id
-  subnet_id       = aws_subnet.kakao_pub_c.id
-  security_groups = [aws_security_group.kakao_http.id] 
+resource "aws_efs_mount_target" "c_mount" {
+  file_system_id  = aws_efs_file_system.efs.id
+  subnet_id       = var.public_c_subnet_id
+  security_groups = [var.sg_id] 
 }
