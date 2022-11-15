@@ -14,6 +14,7 @@ resource "aws_dynamodb_table" "terraform_state_lock" {
 # attribute는 잠금을 위한 속성을 나타낸다. type은 3가지로 "S"(String), "N"(Number), "B"(Binary)가 있다.
 
 
+
 resource "aws_s3_bucket" "state" {
     bucket = "octopus-dream-terraform"
     force_destroy = true # 강제 삭제

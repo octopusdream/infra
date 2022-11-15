@@ -240,28 +240,51 @@ resource "aws_route_table_association" "pri_c" {
 ####################
 # s3 endpoint
 resource "aws_vpc_endpoint" "s3" {
-  vpc_id                   = aws_vpc.vpc.id
-  service_name = "com.amazonaws.${var.region}.s3"
+    vpc_id                   = aws_vpc.vpc.id
+    service_name = "com.amazonaws.${var.region}.s3"
 
-      tags = {
-        "Name"               = "${var.alltag}-endpoint"
+    tags = {
+        "Name"               = "${var.alltag}-endpoint-s3"
     }
 }
 
-resource "aws_vpc_endpoint_route_table_association" "route_table_association_a" {
+resource "aws_vpc_endpoint_route_table_association" "route_table_association_s3_a" {
   route_table_id = "${aws_route_table.pria_rt.id}"
   vpc_endpoint_id = "${aws_vpc_endpoint.s3.id}"
 }
 
-resource "aws_vpc_endpoint_route_table_association" "route_table_association_b" {
+resource "aws_vpc_endpoint_route_table_association" "route_table_association_s3_b" {
   route_table_id = "${aws_route_table.prib_rt.id}"
   vpc_endpoint_id = "${aws_vpc_endpoint.s3.id}"
 }
 
-resource "aws_vpc_endpoint_route_table_association" "route_table_association_c" {
+resource "aws_vpc_endpoint_route_table_association" "route_table_association_s3_c" {
   route_table_id = "${aws_route_table.pric_rt.id}"
   vpc_endpoint_id = "${aws_vpc_endpoint.s3.id}"
 }
 
 
+# dynamodb endpoint
+resource "aws_vpc_endpoint" "dynamodb" {
+    vpc_id                   = aws_vpc.vpc.id
+    service_name = "com.amazonaws.${var.region}.dynamodb"
 
+    tags = {
+        "Name"               = "${var.alltag}-endpoint-dynamodb"
+    }
+}
+
+resource "aws_vpc_endpoint_route_table_association" "route_table_association_dynamodb_a" {
+  route_table_id = "${aws_route_table.pria_rt.id}"
+  vpc_endpoint_id = "${aws_vpc_endpoint.dynamodb.id}"
+}
+
+resource "aws_vpc_endpoint_route_table_association" "route_table_association_dynamodb_b" {
+  route_table_id = "${aws_route_table.prib_rt.id}"
+  vpc_endpoint_id = "${aws_vpc_endpoint.dynamodb.id}"
+}
+
+resource "aws_vpc_endpoint_route_table_association" "route_table_association_dynamodb_c" {
+  route_table_id = "${aws_route_table.pric_rt.id}"
+  vpc_endpoint_id = "${aws_vpc_endpoint.dynamodb.id}"
+}
