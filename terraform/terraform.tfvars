@@ -1,24 +1,18 @@
 
-# cidr_block
-aws_vpc_cidr_block = "10.0.0.0/16"
-aws_puba_subnet_cidr_block = "10.0.0.0/24"
-aws_pubb_subnet_cidr_block = "10.0.1.0/24"
-aws_pubc_subnet_cidr_block = "10.0.2.0/24"
-aws_pria_subnet_cidr_block = "10.0.3.0/24"
-aws_prib_subnet_cidr_block = "10.0.4.0/24"
-aws_pric_subnet_cidr_block = "10.0.5.0/24"
+####### cidr_block
+vpc_cidr_block = "10.0.0.0/16"
+public_subnet_a_cidr_block = "10.0.0.0/24"
+public_subnet_b_cidr_block = "10.0.1.0/24"
+public_subnet_c_cidr_block = "10.0.2.0/24"
+private_subnet_a_cidr_block = "10.0.3.0/24"
+private_subnet_b_cidr_block = "10.0.4.0/24"
+private_subnet_c_cidr_block = "10.0.5.0/24"
 
 
-# region
-aws_region = "ap-northeast-2"
+######## region
+# region = "ap-northeast-2"
 
-# availability_zone
-aws_availability_zone_a = "ap-northeast-2a"
-aws_availability_zone_b = "ap-northeast-2b"
-aws_availability_zone_c = "ap-northeast-2c"
-
-
-
+aws_ec2_ami = "ami-08c2ee02329b72f26"
 
 aws_bastion_size = "t3.micro"
 aws_bastion_num  = 3
