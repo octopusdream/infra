@@ -206,6 +206,160 @@ aws ec2 associate-iam-instance-profile --iam-instance-profile Name="" --instance
 aws ec2 describe-iam-instance-profile-associations
 ```
 
+## EFS 생성
+1. EFS Mount는 DNS를 사용하기 때문에 위치한 VPC의 DNS 활성화를 해줘야한다. 또한 같은 VPC에 EFS를 생성해야 한다.
+![](https://velog.velcdn.com/images/hyunshoon/post/ff857e89-f39d-49c9-bc54-62428976b5b3/image.png)
+
+2. EFS 파일시스템 전용 보안그룹이 필요하다.
+
+인바운드 프로토콜은 NFS로하고, 연결할 EC2 인스턴스의 VPC와 보안그룹에 맞게 설정한다.
+
+EFS -> 세부정보 -> 연결
+
+![](https://velog.velcdn.com/images/hyunshoon/post/a0484ecb-b3bf-4b63-9fdc-20d3175e10fb/image.png)
+
+
+## EFS Client 설치 및 mount 
+EFS 헬퍼를 사용하려면 amazon-efs-utils 패키지를 설치해야한다.
+
+```
+sudo apt-get update
+sudo apt-get -y install git binutils
+git clone https://github.com/aws/efs-utils
+cd efs-utils
+./build-deb.sh
+sudo apt-get -y install ./build/amazon-efs-utils*deb
+```
+
+
+```
+#마운트 할 폴더 생성
+mkdir /efs
+#마운트
+sudo mount -t efs -o tls "file-system-id":/ /efs
+#확인
+df-h
+
+```
+![](https://velog.velcdn.com/images/hyunshoon/post/d7b7ec1f-0345-4800-897e-a1ca1ee71d46/image.png)
+```
+#재부팅후에도 마운트 유지 설정
+vi /etc/fstab
+"file-system-id":/ "efs-mount-point" efs _netdev,tls 0 0
+```
+
+## EFS CSI Driver 배포
+
+helm을 사용한 배포
+
+```
+helm repo add aws-efs-csi-driver https://kubernetes-sigs.github.io/aws-efs-csi-driver/
+helm repo update
+helm upgrade --install aws-efs-csi-driver --namespace kube-system aws-efs-csi-driver/aws-efs-csi-driver --set useFips=true #FIPS 적용
+```
+
+`kubectl get pod -n kube-system`으로 확인
+![](https://velog.velcdn.com/images/hyunshoon/post/5d375658-02a2-40fe-a947-4d4937a58458/image.png)
+
+```
+
+ ✘ ⚡ root@master  ~  k describe pod efs-csi-controller-76bdf5fd59-qc644 -n kube-system
+
+Events:
+  Type    Reason     Age    From               Message
+  ----    ------     ----   ----               -------
+  Normal  Scheduled  3m48s  default-scheduler  Successfully assigned kube-system/efs-csi-controller-76bdf5fd59-qc644 to worker1
+  Normal  Pulling    3m47s  kubelet            Pulling image "amazon/aws-efs-csi-driver:v1.4.5"
+  Normal  Pulled     3m14s  kubelet            Successfully pulled image "amazon/aws-efs-csi-driver:v1.4.5" in 33.272712306s
+  Normal  Created    3m14s  kubelet            Created container efs-plugin
+  Normal  Started    3m13s  kubelet            Started container efs-plugin
+  Normal  Pulling    3m13s  kubelet            Pulling image "public.ecr.aws/eks-distro/kubernetes-csi/external-provisioner:v2.1.1-eks-1-18-13"
+  Normal  Pulled     3m3s   kubelet            Successfully pulled image "public.ecr.aws/eks-distro/kubernetes-csi/external-provisioner:v2.1.1-eks-1-18-13" in 10.558849166s
+  Normal  Created    3m2s   kubelet            Created container csi-provisioner
+  Normal  Started    3m2s   kubelet            Started container csi-provisioner
+  Normal  Pulling    3m2s   kubelet            Pulling image "public.ecr.aws/eks-distro/kubernetes-csi/livenessprobe:v2.2.0-eks-1-18-13"
+  Normal  Pulled     2m55s  kubelet            Successfully pulled image "public.ecr.aws/eks-distro/kubernetes-csi/livenessprobe:v2.2.0-eks-1-18-13" in 6.635035635s
+```
+worker1에서는 정상 배포
+시간이 지나보니 efs-csi-driver-controller가 deploy 2개 모두 worker1에 배포되었다. 이게 문제가 될지 추후에 알아보겠다.
+
+## pv, pvc test on EFS using CSI Driver
+
+pv.yaml
+```yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: prometheus-server
+spec:
+  capacity:
+    storage: 5Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  csi:
+    driver: efs.csi.aws.com
+    volumeHandle: [FileSystemId] 
+```
+pvc.yaml
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prometheus-server
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ""
+  resources:
+    requests:
+      storage: 10Gi
+```
+pod.yaml
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: efs-app
+spec:
+  containers:
+  - name: app
+    image: centos
+    command: ["/bin/sh"]
+    args: ["-c", "while true; do echo $(date -u) >> /data/out.txt; sleep 5; done"]
+    volumeMounts:
+    - name: persistent-storage
+      mountPath: /data
+  volumes:
+  - name: persistent-storage
+    persistentVolumeClaim:
+      claimName: efs-claim
+```
+
+```
+kubectl apply -f pv.yaml
+kubectl apply -f pvc.yaml
+kubectl apply -f pod.yaml
+
+kubectl get pods
+ ✘ ⚡ root@master  ~/prometheus  kubectl exec -ti efs-app -- tail -f /data/out.txt
+Tue Nov 15 04:06:27 UTC 2022
+Tue Nov 15 04:06:32 UTC 2022
+Tue Nov 15 04:06:37 UTC 2022
+Tue Nov 15 04:06:42 UTC 2022
+Tue Nov 15 04:06:47 UTC 2022
+Tue Nov 15 04:06:52 UTC 2022
+Tue Nov 15 04:06:57 UTC 2022
+Tue Nov 15 04:07:02 UTC 2022
+Tue Nov 15 04:07:07 UTC 2022
+Tue Nov 15 04:07:12 UTC 2022
+```
+
+pv, pvc가 정상적으로 작동한다.
+
+
 Reference
 
 - https://minjii-ya.tistory.com/30 : EFS 파일 시스템 -생성/마운트
@@ -215,3 +369,4 @@ Reference
 - https://docs.aws.amazon.com/ko_kr/IAM/latest/UserGuide/id_roles_use_switch-role-ec2_instance-profiles.html: 인스턴스 프로필 사용
 - https://github.com/kubernetes-sigs/aws-efs-csi-driver: aws-efs-csi-driver github repo
 - https://devlog-wjdrbs96.tistory.com/302: IAM 개념 및 용어 정리
+- https://docs.aws.amazon.com/ko_kr/eks/latest/userguide/efs-csi.html
