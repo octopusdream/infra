@@ -50,9 +50,9 @@ AmazonVPCFullAccess
 
 kubespray는 Ansible을 통해 쿠버네티스 클러스터를 유연하고 쉽게 배포 및 관리하기 위한 강력한 오픈 소스 툴이다. 
 
-AWS, GCP, Azure, OpenStack, vSphere, Packet(베어메탈), Oracle Cloud 등 여러 플랫폼에서 클러스터를 배포할 수 있다. 
+AWS, GCP, Azure, OpenStack, vSphere, Packet(베어메탈), Oracle Cloud등 여러 플랫폼에서 클러스터를 배포할 수 있다. 
 
-kubespray는 Ansible과 kubeadm의 조합을 활용하여 Linux OS 종류, 네트워크 플러그인, 애플리케이션 등 옵션을 선택하여 쿠버네티스를 배포합니다.
+kubespray는 Ansible과 kubeadm의 조합을 활용하여 Linux OS 종류, 네트워크 플러그인, 애플리케이션 등 옵션을 선택하여 쿠버네티스를 배포한다.
 
 
 설치 방법 https://kubernetes.io/ko/docs/setup/production-environment/tools/kubespray/
@@ -77,7 +77,7 @@ kubeadm은 베어 리눅스, EC2 리눅스, VM 리눅스 등 인프라 환경에
 
 AWS의 EKS, GCP의 GKE, Azure의 AKS 등의 관리형 서비스를 이용해 쿠버네티스를 사용하면 쿠버네티스의 설치 및 관리까지도 클라우드 제공자(AWS,GCP,Azure)가 담당하므로 쿠버네티스 관리 및 유지보수의 비용이 줄어들게 된다.
 
-관리형 서비스를 사용하면 별도로 쿠버네티스를 설치할 필요 없이 실제 서비스 환경을 구성할 수 있다는 장점이 있습니다.
+관리형 서비스를 사용하면 별도로 쿠버네티스를 설치할 필요 없이 실제 서비스 환경을 구성할 수 있다는 장점이 있다.
 
 
 ![image](https://user-images.githubusercontent.com/88362207/202118662-25a739d6-6063-4c37-aa34-2f427d046eda.png)
@@ -95,6 +95,6 @@ AWS에 직접 k8s 클러스터를 구축하는 이유 아래와 같다.
 1. 프로젝트를 진행하면서, 쿠버네티스 EKS는 가격적(시간당 0.1USD)으로 부담이 많이 된다.
 (마스터노드의 수는 Raft알고리즘 특성 상 홀수로 유지하는 것이 좋으며, 두 개의 마스터노드는 한개만도 못한 결과를 초래한다)
 
-2. AWS에서 어떤 방식으로 쿠버네티스 클러스터가 구축되고, 동작을 하는지에 대한 이해하기 위해 EKS, GKE같은 관리형 서비스를 사용하기 보다는 kubeadm을 사용하여 k8s 클러스터를 직접 구축 해보고 오브젝트 등 전체적인 개념을 파악
+2. AWS에서 어떤 방식으로 쿠버네티스 클러스터가 구축되고, 동작을 하는지에 대해 이해하기 위해서 EKS, GKE같은 관리형 서비스를 사용하기 보다는 kubeadm을 사용하여 k8s 클러스터를 직접 구축 해보고 오브젝트 등 전체적인 개념을 파악해 보기 위함이다.
 
 
