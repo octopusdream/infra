@@ -59,6 +59,6 @@ resource "aws_vpc_endpoint_route_table_association" "route_table_association_c" 
   vpc_endpoint_id = "${aws_vpc_endpoint.s3.id}"
 }
 ```
-
+ 
 - 확인
 ![image](https://user-images.githubusercontent.com/72699541/201561969-2560a990-90b2-4e6c-a06e-644891d2dbd8.png)
