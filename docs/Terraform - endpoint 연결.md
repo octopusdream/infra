@@ -1,4 +1,12 @@
+Amazon S3는 인터넷망에 연결된 글로벌 서비스로 인터넷 기반 IP 주소 및 연결 정보를 가지고 있다.
 
+공용 리소스에 대해서 public subnet 에 위치한 인스턴스는 internet gateway 를 통해 문제 없이 연결이 가능하다.
+
+하지만 private subnet 에 위치한 인스턴스는 인터넷에 연결되어 있는 S3와 같은 공용 리소스를 연결할 수 없다.
+
+이럴때 S3에 연결하기 위해서는 NAT Gateway 혹은 VPC Endpoint가 필요하다
+
+---
 ### NAT Gateway
 
 VPC Endpoint 를 사용하지 않으면  private subnet 에 위치한 인스턴스가 AWS 서비스인 S3에 연결할 때 NAT Gateway 를 사용하여 internet gateway 를 통해 S3 에 접속하게 된다. 
@@ -20,6 +28,7 @@ endpoint
 
 
 ---
+
 
 ### terraform S3용 gateway VPC endpoint 를 생성
 
