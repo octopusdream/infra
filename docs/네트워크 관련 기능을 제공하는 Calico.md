@@ -43,17 +43,36 @@ Calico는 CNI (Container Network Inteface)를 지원하기 때문에 Kubernetes�
 
 Calico는 크게 etcd, felix, bird, confd 4가지의 구성요소로 이루어져 있다.
 - etcd는 Kubernetes Cluster에서 동작한다.
-- felix, confd, bird는 모든 Kubernetes Host 위에서 동작하는 calico-node Pod안에서 동작한다.
+- felix, confd, bird는 모든 Kubernetes Host(master, worker) 위에서 데몬셋으로 calico-node Pod가 배치되어 안에서 동작한다. calico controller파드는 deployment로 배치된다.
 - calico-node Pod은 Host(Node)의 Network Namespace를 이용하기 때문에 calico-node Pod안에서 동작하는 App은 Host의 Network 설정을 조회하거나 제어 할 수 있다.
 
-#### 1. bird(BGP)
-![image](https://user-images.githubusercontent.com/88362207/202439091-4690ca4d-8e17-4b4e-bcec-3b6038a16b1a.png)
-  - bird는 BGP (Border Gateway Protocol) Client 역할을 수행한다.
-
-
-# Calico CIN를 사용한 Pod 통신
-### 동일 노드 간 Pod 통신
+#### bird(BGP)
+bird는 각 노드마다 존재하는 BGP 데몬이다. BGP 데몬은 다른 노드에 있는 BGP 데몬들에 라우팅 정보를 공유하는 역할을 담당한다.
+대표적인 네트워크 구성(topology)으로는 노드별 full mesh(그물형)가 있다. 이 구성은 각 노드끼리 모두 BGP peer를 가지며, 가장 기본적인 설정이다. 또한 이것은 작은 규모의 클러스터에 적합하다.
+![image](https://user-images.githubusercontent.com/88362207/202439091-4690ca4d-8e17-4b4e-bcec-3b6038a16b1a.png) 
+더 큰 규모의 클러스터에서는 BGP full mesh peering 방법은 한계가 있어 사용하지 않는다. 이 경우에는 Route Reflector 방법을 사용하여 일부 노드에서만 라우팅 정보를 전파는 방법을 사용할 수 있다. 모든 노드끼리 peer를 구성하는게 아니라 특정 노드만 Route Reflector(RR)로 구성하여 RR로 설정된 노드와만 통신하여 라우팅 정보를 주고 받는 것이다. 라우팅 정보를 전파해야 하는 경우 RR로만 전달하면 RR이 자신과 peer를 맺고 있는 BGP로 전파를 한다.
+![image](https://user-images.githubusercontent.com/88362207/202602064-7199e259-58b2-452b-b97b-b827710d9a1c.png)
+Route Reflector 방법은 한개 이상의 Route Reflector를 두어 가용성을 높힐 수 있다. bird 데몬 대신에 외부 물리 장비(BGP 프로토콜을 수행하는 일반적인 라우터 장비(이것을 소프트웨어로 구현한 것이 bird이다.))를 이용하는 방법도 있다.
+#### felix
+Felix 데몬도 calico-node 컨테이너 안에서 동작하며 다음과 같은 동작을 수행한다.
 ```
-동일 노드 간 Pod <--->  Pod 통신 => 내부에서 직접 통신 된다.
+쿠버네티스 etcd로부터 정보를 읽습니다.
+라우팅 테이블을 만듭니다.
+iptable을 조작합니다.(kube-proxy가 iptables 모드인 경우)
+ipvs을 조작합니다.(kube-proxy가 ipvs 모드인 경우)
 ```
+각 노드에 할당된 pod의 IP 대역이 BGP로 전파되면 그 대역과 정상적으로 통신이 이루어질 수 있도록 iptables와 라우팅테이블 등을 조정한다.
 
+호스트의 라우팅 테이블을 조작하는 역할을 담당합니다.
+
+#### confd
+경량의 configuration management 를 위한 오픈소스로 툴로, datastore를 모니터링 하고 있다가 BGP 설정이나 IPAM 정보 등이 변경되면 변경된 값이 반영될 수 있도록 트리거하는 역할을 한다.
+#### etcd
+
+
+이렇게 전달받은 정보를 리눅스 라우팅 테이블에 추가하는 것은 Felix가 수행하고, 상대방 노드의 pod 대역을 BGP프로토콜로 bird를 통해 전달받아서 라우팅 테이블과 iptable 룰을 조정한다.
+configd는 datastore로 지정된 저장소를 모니터링하고 있다가 값의 변경이 발생하면 트리거 발생시켜서 적용될 수 있도록 한다.
+이러한 과정을 거쳐 각 노드에는 pod의 ip 대역으로 사용할 대역이 IPAM에 의해 정해진다.
+
+---
+# 라우팅 모드
