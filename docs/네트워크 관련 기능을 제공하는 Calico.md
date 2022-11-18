@@ -1,5 +1,10 @@
 우리는 쿠버네티스를 설치하는 첫 단계인 kops, kubeadm, kubespray, GKE, EKS 중 kubeadm을 선택하였고, Calico, Cilium, Flannel 등의 클러스터 네트워킹을 제대로 동작시키기 위한 다양한 네트워크 플러그인 중 Calico를 선택하였다. 
 
+```
+kubeadm은 CNI(Container Network Interface) 기반 네트워크만 지원하며 kubenet은 지원하지 않는다
+ 
+```
+
 그러므로 3rd-party CNI 플러그인 중 하나인 Calico에 대해 알아보기 위해 아래와 같은 순서로 정리해보려한다.
 
 ```
@@ -150,9 +155,45 @@ ConfD는 calico-node 컨테이너 안에서 동작하는 간단한 설정관리 
 ![image](https://user-images.githubusercontent.com/88362207/202640251-88ab46e9-33bd-4b23-8a5c-25edb06c2627.png)
 
 Calico의 동작을 요약하자면 BGP로 Pod 대역 정보를 전달받아 리눅스 라우팅 테이블에 추가하는 것은 Felix가 수행하고, 상대방 노드의 Pod 대역을 BGP프로토콜인 bird를 통해 전달받아서 라우팅 테이블과 iptable 룰을 조정한다.
+
 configd는 datastore로 지정된 저장소를 모니터링하고 있다가 값의 변경이 발생하면 트리거 발생시켜서 적용될 수 있도록 한다.
+
 이러한 과정을 거쳐 각 노드에는 pod의 ip 대역으로 사용할 대역이 IPAM에 의해 정해진다.
- 
+
 ---
-# 라우팅 모드
+# 3. Calico CNI를 사용한 Pod 통신
+### 파드to파드 통신
+동일 노드 내의 파드 간 통신은 내부에서 직접 통신된다
+![image](https://user-images.githubusercontent.com/88362207/202672949-57105140-6310-43ff-ad94-81386ef862a1.png)
+
+![image](https://user-images.githubusercontent.com/88362207/202696321-72cb14bf-1350-4c42-b08e-1ca46dd36b4c.png)
+
+```
+- iptables에 FORWARD Rule에 Allow 정책이 설정되어 있다.
+  - Host Network NS을 거치기 때문이다.
+- calice# 인터페이스에 proxy arp 설정으로 파드에서 바라보는 GW의 MAC 정보를 파드가 전달 받음
+- 동일 노드 내에 Pod 간 통신에서는 Tunnel 인터페이스는 관여하지 않는다.
+```
+### 외부 통신
+Pod에서 외부(인터넷)으로 통신하기 위해서는 해당 노드의 NIC IP 주소로 마스커레이딩이 되어서 외부에 연결이 된다.
+![image](https://user-images.githubusercontent.com/88362207/202696170-497f4686-76b5-4b66-a088-31af9474b4fb.png)
+
+```
+- calico 기본 설정은 natOutgoing: true
+⇒ iptables을 조작하여 MASQUERADE 규칙을 설정함
+- calice# 인터페이스에 proxy arp 설정
+- 파드와 외부간 직접 통신에서는 tunnel 인터페이스는 관여하지 않는다.
+```
+### 다른 노드 간 파드to파드 통신
+다른 노드끼리 Pod 간 통신에서는 기본값인 IPIP 모드를 통해서 이루어진다.
+![image](https://user-images.githubusercontent.com/88362207/202696216-1c468736-edb2-4833-8a83-5f9bf4231965.png)
+
+```
+- 각 노드에 Pod 네트워크 대역은 Bird에 의해 BGP로 광고 및 전파가 된다.
+- Bird에 의해 광고 및 전파가 되면 Felix에 의해 호스트의 라우팅 테이블에 자동으로 추가, 삭제된다.
+- 다른 노드 간의 파드 통신을 tunl0 인터페이스를 통해 IP 헤더에 감싸진다.
+- IP 헤더에 감싸진 뒤 상대 노드 tunl0 인터페이스에 도달하면 Outer 헤더를 제거하고 내부 파드와 통신하게 된다.
+```
+---
+# 4. 라우팅 모드
 Calico는 3가지 라우팅 모드를 지원합니다
