@@ -48,8 +48,10 @@ Calico는 크게 etcd, felix, bird, confd 4가지의 구성요소로 이루어�
 
 기본적으로, Calico는 호스트간 라우팅 정보를 공유하기 위해 BGP 프로토콜을 사용한다. 이를 위해 calico-node라는 이름의 Pod가 모든 노드에서 실행된다. 각각의 calico-node는 서로 BGP peering되어 있다.
 
+아래 부터는 etcd, felix, bird, confd 4가지의 구성요소에 대해 설명해보겠다
+
 ---
-#### etcd
+#### 1. etcd
 etcd는 분산 Key-Value store이다.
 
 Calico 구동에 필요한 Network 구성/설정 정보, Calico 설정 정보 등 다양한 정보를 저장한다.
@@ -57,12 +59,12 @@ Calico 구동에 필요한 Network 구성/설정 정보, Calico 설정 정보 �
 또한 저장한 key-value값이 변경될 경우 felix나 bird에게 변경 정보를 전달하는 Communication Bus 역할도 수행한다.
 
 ---
-#### bird(BGP)
+#### 2. bird(BGP)
 bird는 각 노드마다 존재하는 BGP 데몬이다. BGP 데몬은 다른 노드에 있는 BGP 데몬들에 라우팅 정보를 공유하는 역할을 담당한다.
 
 네트워크 구성 방법으로 'BGP full mesh peering'과 'Route Reflector' 방법 두가지가 있다.
 
-##### 1.[BGP full mesh peering]
+##### 2.1 - [BGP full mesh peering]
 
 대표적인 네트워크 구성(topology)으로는 노드별 full mesh(그물형)가 있다. 이 구성은 각 노드끼리 모두 BGP peer를 가지며, 가장 기본적인 설정이다. 또한 이것은 작은 규모의 클러스터에 적합하다.
 
@@ -89,7 +91,7 @@ No IPv6 peers found.
 
 이 경우에는 Route Reflector 방법을 사용하여 일부 노드에서만 라우팅 정보를 전파는 방법을 사용할 수 있다. 
 
-##### 2.[Route Reflector]
+##### 2.2 - [Route Reflector]
 
 모든 노드끼리 peer를 구성하는게 아니라 특정 노드만 Route Reflector(RR)로 구성하여 RR로 설정된 노드와만 통신하여 라우팅 정보를 주고 받는 것이다. 
 
@@ -102,7 +104,7 @@ bird 데몬 대신에 외부 물리 장비(BGP 프로토콜을 수행하는 일�
 
 ---
 
-#### felix
+#### 3. felix
 felix는 Host의 Network를 설정하는 Daemon이다
 
 felix 데몬도 Calico-node 컨테이너 안에서 동작하며 다음과 같은 동작을 수행한다.
@@ -134,7 +136,7 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 각 호스트의 pod CIDR(Destination + Genmask)는 tunl0으로 향하며, IP를 가진 Pod는 cali*라는 이름의 네트워크 인터페이스를 가진다. 이것은 네트워크 정책을 부여하기 위해 존재한다.
 
 ---
-#### confd
+#### 4. confd
 ConfD는 calico-node 컨테이너 안에서 동작하는 간단한 설정관리 툴입니다.
 
 데이터 저장소로부터 BIRD 설정값을 읽어들이고 디스크 파일로 쓰기 작업도 수행합니다. 
@@ -150,7 +152,7 @@ ConfD는 calico-node 컨테이너 안에서 동작하는 간단한 설정관리 
 Calico의 동작을 요약하자면 BGP로 Pod 대역 정보를 전달받아 리눅스 라우팅 테이블에 추가하는 것은 Felix가 수행하고, 상대방 노드의 Pod 대역을 BGP프로토콜인 bird를 통해 전달받아서 라우팅 테이블과 iptable 룰을 조정한다.
 configd는 datastore로 지정된 저장소를 모니터링하고 있다가 값의 변경이 발생하면 트리거 발생시켜서 적용될 수 있도록 한다.
 이러한 과정을 거쳐 각 노드에는 pod의 ip 대역으로 사용할 대역이 IPAM에 의해 정해진다.
-
+ 
 ---
 # 라우팅 모드
 Calico는 3가지 라우팅 모드를 지원합니다
