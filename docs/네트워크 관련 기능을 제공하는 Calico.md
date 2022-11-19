@@ -1,8 +1,7 @@
 우리는 쿠버네티스를 설치하는 첫 단계인 kops, kubeadm, kubespray, GKE, EKS 중 kubeadm을 선택하였고, Calico, Cilium, Flannel 등의 클러스터 네트워킹을 제대로 동작시키기 위한 다양한 네트워크 플러그인 중 Calico를 선택하였다. 
 
 ```
-kubeadm은 CNI(Container Network Interface) 기반 네트워크만 지원하며 kubenet은 지원하지 않는다
- 
+kubeadm은 CNI(Container Network Interface) 기반 네트워크만 지원하며 kubenet은 지원하지 않는다.
 ```
 
 그러므로 3rd-party CNI 플러그인 중 하나인 Calico에 대해 알아보기 위해 아래와 같은 순서로 정리해보려한다.
@@ -42,6 +41,11 @@ CNI는 반드시 K8S가 아닌 다른 런타임에서도 동일하게 동작할 
 Calico는 Container, VM 환경에서 L3기반 Virtual Network를 구축하게 도와주는 Tool이다.
 
 Calico는 CNI (Container Network Inteface)를 지원하기 때문에 Kubernetes나 Meos에서 Network Plugin으로 동작 할 수 있다.
+
+Calico는 Linux 및 Windows 에 대해 인터넷과 동일한 IP 네트워킹 원칙을 기반으로 Kubernetes 포드를 연결하기위한 네트워킹 및 네트워크 정책 솔루션을 제공한다.
+
+Calico는 캡슐화 또는 오버레이없이 구축되어 고성능의 대규모 데이터 센터 네트워킹을 제공 할 수 있다. 또한 Calico는 분산 방화벽을 통해 Kubernetes 포드에 대해 세분화 된 의도 기반 네트워크 보안 정책을 제공한다.
+
 
 ### Calico의 구성요소
 ![image](https://user-images.githubusercontent.com/88362207/202438038-dba7b385-6149-4b5e-8e59-02188347c87b.png)
@@ -166,6 +170,8 @@ configd는 datastore로 지정된 저장소를 모니터링하고 있다가 값�
 동일 노드 내의 파드 간 통신은 내부에서 직접 통신된다
 ![image](https://user-images.githubusercontent.com/88362207/202672949-57105140-6310-43ff-ad94-81386ef862a1.png)
 
+같은 노드 내 pod가 생성되면 calico가 각 pod 별로 가상 인터페이스 veth를 생성하고, 호스트 라우팅 테이블에 각 pod IP에 가상 인터페이스(veth)가 할당된다. 해당 라우팅 테이블을 따라 같은 노드 내 서로 다른 pod는 정상적으로 통신하게 된다.
+
 ![image](https://user-images.githubusercontent.com/88362207/202696321-72cb14bf-1350-4c42-b08e-1ca46dd36b4c.png)
 
 ```
@@ -175,12 +181,12 @@ configd는 datastore로 지정된 저장소를 모니터링하고 있다가 값�
 - 동일 노드 내에 Pod 간 통신에서는 Tunnel 인터페이스는 관여하지 않는다.
 ```
 ### 외부 통신
-Pod에서 외부(인터넷)으로 통신하기 위해서는 해당 노드의 NIC IP 주소로 마스커레이딩이 되어서 외부에 연결이 된다.
+Pod에서 외부(인터넷)으로 통신하기 위해서는 calico가 iptables nat 룰에 의해 파드 IP가 해당 노드의 NIC IP 주소로 MASQUERADE(출발지 IP가 변경)이 되어서 외부와 통신할 수 있다.
 ![image](https://user-images.githubusercontent.com/88362207/202696170-497f4686-76b5-4b66-a088-31af9474b4fb.png)
 
 ```
 - calico 기본 설정은 natOutgoing: true
-⇒ iptables을 조작하여 MASQUERADE 규칙을 설정함
+-> 즉, iptables 에 MASQUERADE Rule(룰) 에 의해서 외부에 연결됨
 - calice# 인터페이스에 proxy arp 설정
 - 파드와 외부간 직접 통신에서는 tunnel 인터페이스는 관여하지 않는다.
 ```
@@ -195,5 +201,68 @@ Pod에서 외부(인터넷)으로 통신하기 위해서는 해당 노드의 NIC
 - IP 헤더에 감싸진 뒤 상대 노드 tunl0 인터페이스에 도달하면 Outer 헤더를 제거하고 내부 파드와 통신하게 된다.
 ```
 ---
-# 4. 라우팅 모드
-Calico는 3가지 라우팅 모드를 지원합니다
+# 4. Calico 네트워크 모드
+![image](https://user-images.githubusercontent.com/88362207/202840917-ad4a0d85-2da5-4867-a156-53dbf063eed5.png)
+
+Calico는 3가지 라우팅 모드를 지원한다. 
+```
+IP-in-IP 모드: 기본설정, encapsulated
+Direct / NoEncapMode 모드: unencapsulated (추천모드)
+VXLAN 모드: encapsulated (No BGP)
+```
+
+
+### 1. IP-in-IP (Default) 모드
+![image](https://user-images.githubusercontent.com/88362207/202845335-e942eb5d-a405-4bb9-9cb9-042054be9066.png)
+
+IP-in-IP 모드 안에서도 두개의 옵션이 있다. (subnet 내부 통신이냐 외부의 통신이냐에 따라 옵션 선택 가능)
+
+IPIP(IP Protocol 4(IP in IP) 허용이 꼭 필요하다. Azure는 불가능)
+
+IP-in-IP 모드는 IP 패킷을 다른 IP 패킷에 집어 넣음으로써 간단하게 캡슐화하는 방법이다. 바깥의 IP 패킷에는 호스트 서버의 출발지, 목적지 IP가 들어있고 안쪽 IP 패킷에는 Pod의 출발지, 목적지 정보가 들어 있다. 
+
+노드와 노드 구간에서는 IPIP Encapsulation을 통해 이루어진다.
+(단, Azure 네트워크에서는 IPIP 통신이 불가능하기 때문에 대신 VXLAN 모드를 사용한다.)
+
+더 나은 성능을 위해 IP-IP 모드를 비활성화할 수 있습니다.
+
+- 다른 노드 간의 파드 통신은 tunl0 인터페이스를 통해 IP 헤더에 감싸져서 상대측 노드로 도달 후 tunl0 인터페이스에서 Outer 헤더를 제거하고 내부의 파드와 통신
+- 다른 노드의 파드 대역은 BGP로 전달 받아 호스트의 라우팅 테이블에 업데이트 된다. (Felix)
+
+
+### 2. Direct 모드
+![image](https://user-images.githubusercontent.com/88362207/202845365-6896b63a-840a-417d-8e6b-c057639aedb2.png)
+
+파드 통신 패킷이 출발지 노드의 라우팅 정보를 보고 목적지 노드로 원본 패킷을 그대로 전달
+(단, 클라우드 사업자 네트워크 사용 시, NIC에 매칭되지 않는 IP 패킷은 차단되니 NIC의 Source/Destination Check 기능을 Disable해야 정상 통신 가능)
+
+Direct를 사용하기 위해서 Calico IPPool의 IP-in-IP 기능이 활성화되어 있으면 안된다.
+### 2.1 CrossSubnet 모드
+
+노드 간 같은 네트워크 대역은 Direct 모드로, 노드 간 다른 네트워크 대역은 IPIP 모드로 동작한다.
+
+
+### 3. VXLAN 모드
+![image](https://user-images.githubusercontent.com/88362207/202845399-b3eb10eb-893f-4b4e-991a-17def988f59f.png)
+
+calico 3.7 이상부터 지원한다.
+
+파드 간 통신이 노드 구간에서 VXLAN Encapsulation을 통해서 이루어진다.
+
+- 다른 노드 간 파드 통신이 VXLAN Interface를 통해 L2 Frame이 UDP - VXLAN에 감싸져서 상대측 노드로 도달 후 VXLAN 인터페이스에서 Outer 헤더를 제거하고 내부의 파드와 통신
+- BGP 미사용 (VXLAN L3 라우팅을 통해서 동작)
+- Azure나 BGP 프로토콜을 지원하지 않는 데이터센터와 같이 IP-in-IP 모드를 지원하지 않는 네트워크에서 잘 사용될 수 있다.
+---
+
+# 5. Pod 패킷 암호화(네트워크 레벨)
+![image](https://user-images.githubusercontent.com/88362207/202845418-41a4ceb9-ae3c-42b8-8cd8-0f5788d569b9.png)
+
+Pod 패킷 암호화를 하기 위해서 Wireg를 사용할 수 있다.
+
+Calico의 다양한 네트워크 모드 환경 위에서 WireGuard 터널을 자동 생성 및 파드 트래픽을 암호화하여 노드 간 전달한다.
+
+Yaml 파일에 간단하게 추가하는 것만으로도 네트워크 레벨의 패킷 암호화를 설정할 수 있다.
+---
+# 6. Calico의 네트워크 접근 통제하는 방법을 확인해본다. (Network Policy)
+
+# 7. trouble shooting
