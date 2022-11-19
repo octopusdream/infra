@@ -17,8 +17,8 @@ aws_ec2_ami = "ami-08c2ee02329b72f26"
 aws_bastion_size = "t3.micro"
 aws_bastion_num  = 3
 
-aws_master_size = "t3.micro"
+aws_master_size = "t3.medium"
 aws_master_num  = 3
 
-aws_worker_size = "t3.micro"
+aws_worker_size = "t3.medium"
 aws_worker_num  = 2

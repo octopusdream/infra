@@ -44,3 +44,11 @@ resource "aws_efs_mount_target" "c_mount" {
   subnet_id       = var.public_c_subnet_id
   security_groups = [var.sg_id] 
 }
+
+resource "aws_efs_backup_policy" "policy" {
+  file_system_id = aws_efs_file_system.efs.id
+
+  backup_policy {
+    status = "ENABLED"
+  }
+}

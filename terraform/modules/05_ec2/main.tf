@@ -1,16 +1,3 @@
-resource "aws_instance" "bastion" {
-  ami = var.aws_ec2_ami
-  instance_type = var.aws_bastion_size
-  key_name = "kakaokey"
-  vpc_security_group_ids = [var.sg_id]
-  subnet_id = var.public_a_subnet_id
-  availability_zone       = var.AZ_a
- 
-  tags = {
-    Name = "${var.alltag}-bastion"
-  }
-}
-
 resource "aws_instance" "master1" {
   ami = var.aws_ec2_ami
   instance_type = var.aws_master_size
@@ -19,10 +6,20 @@ resource "aws_instance" "master1" {
   key_name = "kakaokey"
   availability_zone       = var.AZ_a
   associate_public_ip_address = false
+  source_dest_check = false
  
   tags = {
     Name = "${var.alltag}-master-a"
   }
+  depends_on = [
+    aws_instance.worker1[0],
+    aws_instance.worker2[0],
+    aws_instance.worker3[0],
+    aws_instance.worker1[1],
+    aws_instance.worker2[1],
+    aws_instance.worker3[1]
+  ]
+  user_data = "${data.template_file.master.rendered}"
 }
 
 resource "aws_instance" "worker1" {
@@ -34,26 +31,13 @@ resource "aws_instance" "worker1" {
   key_name = "kakaokey"
   availability_zone       = var.AZ_a
   associate_public_ip_address = false
+  source_dest_check = false
  
   tags = {
     Name = "${var.alltag}-worker-a-${count.index + 1}"
   }
-
-  user_data = <<-EOF
-    #!/bin/bash   
-    sudo su -
-    sudo mkdir /efs
-    sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport ${var.efs_dns_name}:/ /efs
-    df -h
-    touch /efs/kakao
-    ls /efs
-    EOF
-
-  # depends_on = [
-    # var.a_mount
-  # ]
+  user_data = "${data.template_file.worker.rendered}"
 }
-
 
 resource "aws_instance" "master2" {
   ami = var.aws_ec2_ami
@@ -63,10 +47,12 @@ resource "aws_instance" "master2" {
   key_name = "kakaokey"
   availability_zone       = var.AZ_b
   associate_public_ip_address = false
- 
+  source_dest_check = false
+
   tags = {
     Name = "${var.alltag}-master-b"
   }
+  user_data = "${data.template_file.master_2.rendered}"
 }
 
 resource "aws_instance" "worker2" {
@@ -78,24 +64,13 @@ resource "aws_instance" "worker2" {
   key_name = "kakaokey"
   availability_zone       = var.AZ_b
   associate_public_ip_address = false
+  source_dest_check = false
  
   tags = {
     Name = "${var.alltag}-worker-b-${count.index + 1}"
   }
 
-  user_data = <<-EOF
-    #!/bin/bash   
-    sudo su -
-    sudo mkdir /efs
-    sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport ${var.efs_dns_name}:/ /efs
-    df -h
-    touch /efs/kakao
-    ls /efs
-    EOF
-
-  # depends_on = [
-  #   var.b_mount
-  # ]
+  user_data = "${data.template_file.worker.rendered}"
 }
 
 resource "aws_instance" "master3" {
@@ -106,10 +81,17 @@ resource "aws_instance" "master3" {
   key_name = "kakaokey"
   availability_zone       = var.AZ_c
   associate_public_ip_address = false
+  source_dest_check = false
  
   tags = {
     Name = "${var.alltag}-master-c"
   }
+  depends_on = [
+    aws_instance.worker1,
+    aws_instance.worker2,
+    aws_instance.worker3
+  ]
+  user_data = "${data.template_file.master_2.rendered}"
 }
 
 resource "aws_instance" "worker3" {
@@ -121,22 +103,79 @@ resource "aws_instance" "worker3" {
   key_name = "kakaokey"
   availability_zone       = var.AZ_c
   associate_public_ip_address = false
+  source_dest_check = false
  
   tags = {
     Name = "${var.alltag}-worker-c-${count.index + 1}"
   }
 
-  user_data = <<-EOF
-    #!/bin/bash   
-    sudo su -
-    sudo mkdir /efs
-    sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport ${var.efs_dns_name}:/ /efs
-    df -h
-    touch /efs/kakao
-    ls /efs
-    EOF
+  user_data = "${data.template_file.worker.rendered}"
+}
 
-  # depends_on = [
-  #   aws_efs_mount_target.c_mount
-  #   ]
+resource "aws_instance" "bastion" {
+  ami = var.aws_ec2_ami
+  instance_type = var.aws_bastion_size
+  key_name = "kakaokey"
+  vpc_security_group_ids = [var.sg_id]
+  subnet_id = var.public_a_subnet_id
+  availability_zone       = var.AZ_a
+ 
+  tags = {
+    Name = "${var.alltag}-bastion"
+  }
+  user_data = "${data.template_file.user_data.rendered}"
+}
+
+data "template_file" "user_data" {
+  template = "${file("./templates/bastion.tpl")}"
+
+  vars = {
+    key_pem = file("./templates/key.pem")
+    master1_ip = aws_instance.master1.private_ip
+    master2_ip = aws_instance.master2.private_ip
+    master3_ip = aws_instance.master3.private_ip
+    worker1_ip = aws_instance.worker1[0].private_ip
+    worker2_ip = aws_instance.worker1[1].private_ip
+    worker3_ip = aws_instance.worker2[0].private_ip
+    worker4_ip = aws_instance.worker2[1].private_ip
+    worker5_ip = aws_instance.worker3[0].private_ip
+    worker6_ip = aws_instance.worker3[1].private_ip
+  }
+}
+
+data "template_file" "master" {
+  template = "${file("./templates/master.tpl")}"
+
+  vars = {
+    key_pem = file("./templates/key.pem")
+    worker1_ip = aws_instance.worker1[0].private_ip
+    worker2_ip = aws_instance.worker1[1].private_ip
+    worker3_ip = aws_instance.worker2[0].private_ip
+    worker4_ip = aws_instance.worker2[1].private_ip
+    worker5_ip = aws_instance.worker3[0].private_ip
+    worker6_ip = aws_instance.worker3[1].private_ip
+  }
+}
+
+
+data "template_file" "master_2" {
+  template = "${file("./templates/master_2.tpl")}"
+
+  vars = {
+    key_pem = file("./templates/key.pem")
+    worker1_ip = aws_instance.worker1[0].private_ip
+    worker2_ip = aws_instance.worker1[1].private_ip
+    worker3_ip = aws_instance.worker2[0].private_ip
+    worker4_ip = aws_instance.worker2[1].private_ip
+    worker5_ip = aws_instance.worker3[0].private_ip
+    worker6_ip = aws_instance.worker3[1].private_ip
+  }
+}
+
+data "template_file" "worker" {
+  template = "${file("./templates/worker.tpl")}"
+
+  vars = {
+    efs_dns_name = var.efs_dns_name
+  }
 }

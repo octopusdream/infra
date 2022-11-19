@@ -8,6 +8,16 @@ resource "aws_security_group" "http" {
     }
 }
 
+resource "aws_security_group_rule" "allow_custom_ingress" {
+    type              = "ingress"
+    from_port         = 0
+    to_port           = 65535
+    protocol          = "4"
+    cidr_blocks       = ["0.0.0.0/0"]
+    security_group_id = aws_security_group.http.id
+    description = "Custom Protocol from VPC"
+}
+
 resource "aws_security_group_rule" "allow_http_ingress" {
     type              = "ingress"
     from_port         = 80
@@ -48,6 +58,17 @@ resource "aws_security_group_rule" "allow_kube_apiserver1_ingress" {
     security_group_id = aws_security_group.http.id
     description = "kube_apiserver from VPC"
 }
+
+resource "aws_security_group_rule" "allow_kubelet_apiserver1_ingress" {
+    type              = "ingress"
+    from_port         = 8080
+    to_port           = 8080
+    protocol          = "tcp"
+    cidr_blocks       = ["0.0.0.0/0"]
+    security_group_id = aws_security_group.http.id
+    description = "kubelet_apiserver from VPC"
+}
+
 
 resource "aws_security_group_rule" "allow_kube_apiserver2_ingress" {
     type              = "ingress"
