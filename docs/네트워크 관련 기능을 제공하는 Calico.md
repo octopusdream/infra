@@ -57,6 +57,8 @@ Calico는 크게 etcd, felix, bird, confd 4가지의 구성요소로 이루어�
 
 기본적으로, Calico는 호스트간 라우팅 정보를 공유하기 위해 BGP 프로토콜을 사용한다. 이를 위해 calico-node라는 이름의 Pod가 모든 노드에서 실행된다. 각각의 calico-node는 서로 BGP peering되어 있다.
 
+calico-node cop nontainer는 2개의 프로세스로 구성되는데 bird와 Felix이다.
+
 아래 부터는 etcd, felix, bird, confd 4가지의 구성요소에 대해 설명해보겠다
 
 ---
@@ -73,6 +75,7 @@ bird는 각 노드마다 존재하는 BGP 데몬이다. BGP 데몬은 다른 노
 
 네트워크 구성 방법으로 'BGP full mesh peering'과 'Route Reflector' 방법 두가지가 있다.
 
+bird는 
 ##### 2.1 - [BGP full mesh peering]
 
 대표적인 네트워크 구성(topology)으로는 노드별 full mesh(그물형)가 있다. 이 구성은 각 노드끼리 모두 BGP peer를 가지며, 가장 기본적인 설정이다. 또한 이것은 작은 규모의 클러스터에 적합하다.
@@ -195,20 +198,51 @@ Pod에서 외부(인터넷)으로 통신하기 위해서는 calico가 iptables n
 ![image](https://user-images.githubusercontent.com/88362207/202696216-1c468736-edb2-4833-8a83-5f9bf4231965.png)
 
 ```
-- 각 노드에 Pod 네트워크 대역은 Bird에 의해 BGP로 광고 및 전파가 된다.
-- Bird에 의해 광고 및 전파가 되면 Felix에 의해 호스트의 라우팅 테이블에 자동으로 추가, 삭제된다.
-- 다른 노드 간의 파드 통신을 tunl0 인터페이스를 통해 IP 헤더에 감싸진다.
-- IP 헤더에 감싸진 뒤 상대 노드 tunl0 인터페이스에 도달하면 Outer 헤더를 제거하고 내부 파드와 통신하게 된다.
+- 각 노드에 Pod 네트워크 대역은 Bird에 의해 BGP로 광고 및 전파/전달되며, Felix에 의해 호스트의 라우팅 테이블에 자동으로 추가, 삭제된다.
+- 다른 노드 간의 파드 통신을 tunl0 인터페이스를 통해 IP 헤더에 감싸진 뒤, 상대 노드 tunl0 인터페이스에 도달하면 Outer 헤더를 제거하고 내부 파드와 통신하게 된다.
 ```
 ---
 # 4. Calico 네트워크 모드
+calico의 네트워크 모드에 대해 설명하기 전, CNI의 네트워크 모델로 어떤 것이 있는지 먼저 살펴보자
+
+본질적인 기능인 컨테이너 혹은 노드간의 통신을 중개할 때, 사용하는 네트워크 모델로 무엇을 사용하는지에 따라 크게 분류할 수 있다. 네트워크 모델은 다음과 같다.
+
+![image](https://user-images.githubusercontent.com/88362207/202901476-4c728949-a693-4cd3-adb1-8bed8be8a24c.png)
+
+```
+오버레이 - 캡슐화된(Encapsulation) 네트워크 모델 - VXLAN(Virtual Extensible LAN), IP-in-IP 프로토콜 
+비-오버레이 - 캡슐화 되지 네트워크 모델 - BGP(Border Gateway Protocal)
+```
+
+### 오버레이 네트워크
+![image](https://user-images.githubusercontent.com/88362207/202904114-93b21b9f-5295-4249-9aa9-c175fae5647e.png)
+
+VXLAN, IP-in-IP는 tunnel 내부에 packet을 캡슐화한다. 캡슐화된 packet들은 자신들이 오가는 이 network가 자신들이 속한 네트워크로 느낀다. 각 노드에 위치한 가상의 터널의 EndPoint(Virtual Tunnel EndPoint)를 통해 캡슐화된 패킷을 전달하는 방식을 활용하여 복잡한 네트워크 환경에서의 통신을 추상화한다. k8s를 위해 tunneling overlay 기술은 virtual pod network 를 host network와 독립된 network로 동작할 수 있게 한다.
+
+Calico를 기준으로 현재 두가지 방식의 Overlay Network가 지원되는데 VXLAN, IP-in-IP 프로토콜 방식이 있다. VXLAN은 IP-in-IP에 비해 범용성(P-in-IP 프로토콜은 Azure 클라우드와 같은 특정 환경에서 사용이 어렵다)이 있으나 성능이 P-in-IP 프로토콜에 비해 근소하게 뒤떨어진다. 하지만 매우 극단적인 트래픽이 아닌 이상 차이가 실감하기 어렵기 때문에 오버레이 네트워크를 사용할 때 가장 기본적으로 사용되는 방식이다.
+
+오버레이 네트워크를 사용하면 거의 대부분의 환경에서 기존 네트워크 환경에 영향 없이 CNI 환경을 구성할 수 있지만, BGP 프로토콜을 사용하는 방식에 비해 패킷을 캡슐화 할때 CPU 등의 자원도 소모하고 패킷의 전체 크기에서 캡슐화를 위해 사용하는 영역 만큼 패킷 당 송/수신 할 수 있는 데이터의 양이 줄어들어 상대적으로 비효율 적인 단점도 있다.
+
+### 비오버레이 네트워크
+![image](https://user-images.githubusercontent.com/88362207/202904096-d13a8a8c-4cc6-4e2d-a257-b394bdaf9c49.png)
+
+BPG 기반의 오버레이는 통신이 발생하는 노드간에 BPG 프로토콜을 사용하는 소프트웨어 라우터의 구현을 통해서 최적의 경로 정보를 현재 엔드포인트들의 상태를 따라서 동적으로 감지하여 적용할 수 있다는 전제를 통해 구현되는 네트워크 모델이다.
+
+BGP 프로토콜을 사용하여 CNI를 구성하면, HA(고가용성)를 위해 클러스터 구성 노드들간의 서브넷이 다르게 구성되어 있는 경우 상위의 물리 라우터에도 별도의 설정을 해주어야 하고, 통신이 가능한 대역에서 여러 클러스터를 활용하거나 별도의 외부 서비스들을 운영하는 경우 네트워크 대역이 겹치지 않도록 관리를 해주어야 하고, 그렇기 때문에 퍼블릭 클라우드 등에서의 구성이 자유롭지 않은 등의 단점이 있다.(상단 라우터의 설정을 임의로 수정하는 것이 어렵기 때문이다.)
+
+하지만 별도의 패킷 가상화 없이 기존에 네트워크에서 사용하던 직관적인 라우팅 방식을 이용함으로써 클러스터 외부에서도 Ingress나 Service의 도움 없이 Pod에 접근 할 수 있게 되고, 통일화 된 보안 설정 관리 및 디버깅/로깅의 용이성과 더불어 오버레이 네트워크에 비해 성능이 좋다는 구분되는 장점도 분명하게 존재한다.
+
+두 네트워크 모델 중에서는 BGP기반의 모델이 성능적으로 더 빠르고 안정적인 모습을 보여준다. 패킷에 대한 캡슐/복호화 과정에서 발생하는 오버헤드가 없기 때문이다.
+
+하지만, BGP기반의 방식은 노드간의 서브넷이 다를 경우 물리적인 라우터 장비의 설정을 변경해주어야 하는 환경 의존성이 분명하게 존재하고, 이 단점은 특히 퍼블릭 클라우드에서 쿠버네티스 환경을 구성할 때 치명적인 단점으로 계산된다.
+
 ![image](https://user-images.githubusercontent.com/88362207/202840917-ad4a0d85-2da5-4867-a156-53dbf063eed5.png)
 
-Calico는 3가지 라우팅 모드를 지원한다. 
+## Calico는 3가지 라우팅 모드를 지원한다. 
 ```
 IP-in-IP 모드: 기본설정, encapsulated
-Direct / NoEncapMode 모드: unencapsulated (추천모드)
 VXLAN 모드: encapsulated (No BGP)
+Direct / NoEncapMode 모드: unencapsulated (추천모드)
 ```
 
 
@@ -265,4 +299,3 @@ Yaml 파일에 간단하게 추가하는 것만으로도 네트워크 레벨의 
 ---
 # 6. Calico의 네트워크 접근 통제하는 방법을 확인해본다. (Network Policy)
 
-# 7. trouble shooting
