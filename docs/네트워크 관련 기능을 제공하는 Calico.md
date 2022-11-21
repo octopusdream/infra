@@ -57,7 +57,7 @@ Calico는 크게 etcd, felix, bird, confd 4가지의 구성요소로 이루어�
 
 기본적으로, Calico는 호스트간 라우팅 정보를 공유하기 위해 BGP 프로토콜을 사용한다. 이를 위해 calico-node라는 이름의 Pod가 모든 노드에서 실행된다. 각각의 calico-node는 서로 BGP peering되어 있다.
 
-calico-node cop nontainer는 2개의 프로세스로 구성되는데 bird와 Felix이다.
+Calico-node Container는 2개의 프로세스로 구성되는데 bird와 Felix이다.
 
 아래 부터는 etcd, felix, bird, confd 4가지의 구성요소에 대해 설명해보겠다
 
