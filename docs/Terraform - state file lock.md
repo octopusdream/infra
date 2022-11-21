@@ -68,6 +68,41 @@ resource "aws_s3_bucket" "logs" {
 }
 ```
 
+로그가 한 줄로 나와있습니다.
+
+```
+306f318a2feb3ea2256ba7d4f0ebd322d3b9ec7d93f0d3e5311a19bee92629ce user-bucket-202108 [19/Aug/2021:16:54:07 +0000] 122.38.73.237 arn:aws:sts::763723081076:assumed-role/cm-lim.chaejeong/cm-lim.chaejeong AW98WX6NX1W7TNYK REST.HEAD.BUCKET - "HEAD /user-bucket-202108 HTTP/1.1" 200 - - - 7 6 "-" "S3Console/0.4, aws-internal/3 aws-sdk-java/1.11.1002 Linux/5.4.129-72.229.amzn2int.x86_64 OpenJDK_64-Bit_Server_VM/25.282-b08 java/1.8.0_282 vendor/Oracle_Corporation cfg/retry-mode/legacy" - BOY/uf8pOEOnp+HGW+UejMdD42FTXDPRMtGVECDorULxq4RYnp57dXbiLuF+8U/gGXQRpSn1Cjw= SigV4 ECDHE-RSA-AES128-GCM-SHA256 AuthHeader s3-ap-northeast-2.amazonaws.com TLSv1.2 -
+```
+이 로그가 어떤 내용인지 나눠서 살펴보겠습니다.
+
+- 원본 버킷의 정식 사용자 ID : 306f318a2feb3ea2256ba7d4f0ebd322d3b9ec7d93f0d3e5311a19bee92629ce
+- 요청이 처리된 버킷의 이름 : user-bucket-202108
+- 요청이 수신된 시간 : [19/Aug/2021:16:54:07 +0000]
+- 요청자의 명백한 인터넷 주소 : 122.38.73.237
+- 요청자의 정식 사용자 ID : arn:aws:sts::************:assumed-role/cm-lim.chaejeong/cm-lim.chaejeong
+- 요청의 고유 식별을 위한 문자열 : AW98WX6NX1W7TNYK
+- 작업 내용 : REST.HEAD.BUCKET
+- 요청의 키(파라미터가 없을 경우 -로 표시) : -
+- HTTP 요청 메시지의 Request-URI : "HEAD /user-bucket-202108 HTTP/1.1"
+- 응답의 숫자 HTTP 상태 코드 : 200
+- 오류 코드 : -
+- HTTP 프로토콜 오버헤드를 제외한 보낸 응답 바이트 수 : -
+- 해당 객체의 총 크기 : -
+- 요청이 수신된 시간부터 응답의 마지막 바이트가 전송된 시간 : 7
+- 요청을 처리하는 데 소비한 시간 : 6
+- HTTP Referrer 헤더의 값 : "-"
+- HTTP User-Agent 헤더의 값 : "S3Console/0.4, aws-internal/3 aws-sdk-java/1.11.1002 Linux/5.4.129-72.229.amzn2int.x86_64 OpenJDK_64-Bit_Server_VM/25.282-b08 java/1.8.0_282 vendor/Oracle_Corporation cfg/retry-mode/legacy"
+- 요청의 버전 ID : -
+- x-amz-id-2 또는 Amazon S3 확장 요청 ID : BOY/uf8pOEOnp+HGW+UejMdD42FTXDPRMtGVECDorULxq4RYnp57dXbiLuF+8U/gGXQRpSn1Cjw=
+- 요청을 인증하는 데 사용된 서명 버전 : SigV4
+- HTTPS 요청에 대해 협상된 Secure Sockets Layer (SSL) 암호 : ECDHE-RSA-AES128-GCM-SHA256
+- 사용된 요청 인증 유형 : AuthHeader
+- Amazon S3에 연결하는 데 사용된 엔드포인트 : s3-ap-northeast-2.amazonaws.com
+- 클라이언트가 협상한 TLS(전송 계층 보안) 버전 : TLSv1.2 -
+로그를 나눠서 확인해보니 한 줄에 수많은 정보가 포함되어 있었습니다. 
+
+[설명](https://dev.classmethod.jp/articles/lim-s3-access-log/)
+
 -----
 
 ### acl
