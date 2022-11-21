@@ -4,7 +4,7 @@ k8s는 용도에 따라서 사용하는 k8s 설치 툴의 종류가 달라진다
   - Minikube
   - Docker for Mac / Windows에 내장된 쿠버네티스
   
-### 서비스 테스트 또는 운영 용도의 쿠버네티스 설치	  
+### 서비스 테스트 또는 운영 용도의 쿠버네티스 설치	   
   - kops
   - kubespray
   - kubeadm
