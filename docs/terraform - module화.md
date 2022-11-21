@@ -17,7 +17,7 @@
 - Directory를 mudule로 변경
 - staging 환경에서 module을 사용하기 위해서는 source가 존재해야 한다.
   - ※ staging 환경 - 운영 환경(Production)과 거의 동일한 환경을 만들어 놓고, 운영환경으로 이전하기 전에, 여러 가지 비 기능적인 부분 (Security, 성능, 장애등)을 검증하는 환경
-- staging 경에서의 main.tf 파일은 실제 구성하려는 환경에 대한 정보를 입력해야한다.
+- staging 환경에서의 main.tf 파일은 실제 구성하려는 환경에 대한 정보를 입력해야한다.
 - terraform apply를 통해 실행 및 테스트를 진행한다.
 ---
 ### module의 기본 구조
