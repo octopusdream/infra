@@ -73,9 +73,15 @@ Calico 구동에 필요한 Network 구성/설정 정보, Calico 설정 정보 �
 #### 2. bird(BGP)
 bird는 각 노드마다 존재하는 BGP 데몬이다. BGP 데몬은 다른 노드에 있는 BGP 데몬들에 라우팅 정보를 공유하는 역할을 담당한다.
 
+calico pod 안 에서 프로세스로 동작하며 각 노드의 pod 정보를 bird가 전파하고, 전파 받는다.
+
+![image](https://user-images.githubusercontent.com/88362207/202935440-79a85a70-f82c-4161-98ce-dcbe8a24aae4.png)
+
+노드마다 Bird가 있고, wireshark로 확인해보면 172.16.197.0/26이 현재 Bird가 있는 노드의 pod 대역이라고 광고하는 것. 그럼 상대방 노드의 Bird는 저 노드랑 통신하기 위해 route table에 추가한다.
+
 네트워크 구성 방법으로 'BGP full mesh peering'과 'Route Reflector' 방법 두가지가 있다.
 
-bird는 
+
 ##### 2.1 - [BGP full mesh peering]
 
 대표적인 네트워크 구성(topology)으로는 노드별 full mesh(그물형)가 있다. 이 구성은 각 노드끼리 모두 BGP peer를 가지며, 가장 기본적인 설정이다. 또한 이것은 작은 규모의 클러스터에 적합하다.
