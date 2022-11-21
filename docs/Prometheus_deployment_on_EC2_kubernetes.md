@@ -3,15 +3,16 @@
 
 >
 Prometheus 를 AWS EC2 k8s cluster 환경에 배포한다. (EKS에서의 배포와 다르다)
+>
 후에 Grafana도 배포하고, Dashboard를 External-ip로 노출한다.
 
 ## Index
 
 1. [EFS를 쓰는이유](#efs를-쓰는-이유)
 2. [들어가기에 앞서 문제 상황](#들어가기에-앞서-문제-상황)
-3. [AWS CSI Driver란?](#aws-efs-csi-driver란?)
-4. [AWS CSI Driver on Kubernetes(IAM 권한 설정)](#efs-csi-driver-on-kubernetes(iam-권한-설정))
-5. [EFS 생성부터 마운트, 프로비저닝까지](#efs-생성부터-마운트,-프로비저닝까지)
+3. [AWS CSI Driver란?](#aws-efs-csi-driver란)
+4. [AWS CSI Driver on Kubernetes(IAM 권한 설정)](#efs-csi-driver-on-kubernetesiam-권한-설정)
+5. [EFS 생성부터 마운트, 프로비저닝까지](#efs-생성부터-마운트-프로비저닝까지)
 6. [배포 과정 Trouble Shooting](#trouble-shooting)
 7. [Grafana 배포](#grafana-배포)
 
@@ -33,10 +34,12 @@ Master node(EC2)에 NFS-server를 구성하고 Worker node들에 NFS-utils를 �
 처음으로는 마스터 노드를 NFS-server로 빠르게 만들고 테스트하려고 했다. 하지만, 이 부분도 시행착오가 있었는데, EC2 인스턴스를 생성할 때 기본이 되는 EBS 디스크 용량이 8G 였다는 점이다. pv,pvc request storage capacity가 사용가능한 용량을 넘어섰고, prometheus-server pod는 pending 상태에 교착되었다. pv,pvc가 pending 상태였기 때문이고 이는 앞서 말한 스토리지 용량 부족에서 기인했다.
 
 EBS volume 용량을 늘렸지만, Ready 상태에 도달하지는 못했다. prometheus-server Pod는 Pending -> Container Creating 상태로 바뀌었다. AWS 쿠버네티스 클러스터에서 영구 볼륨을 사용하려면 CSI(Container Storage Interface) Driver가 있어야 한다는걸 [AWS 공식문서](https://docs.aws.amazon.com/ko_kr/eks/latest/userguide/efs-csi.html) 를 통해 알게 되었다. 이전에는 EBS-Provisoner를 사용했지만, 현재 EBS는 [쿠버네티스 공식 문서](https://kubernetes.io/docs/concepts/storage/volumes/#awselasticblockstore)에 따르면 지원하지 않는다.
-![](https://velog.velcdn.com/images/hyunshoon/post/31924675-b3b4-4cbf-abd1-93fb104b28eb/image.png)
-EFS-provisoner 또한 아래에 포함된다.
-![](https://velog.velcdn.com/images/hyunshoon/post/d33417a6-4a66-4657-92b6-ff3adc4c9e3f/image.png)
 
+![](https://velog.velcdn.com/images/hyunshoon/post/31924675-b3b4-4cbf-abd1-93fb104b28eb/image.png)
+
+EFS-provisoner 또한 아래에 포함된다.
+
+![](https://velog.velcdn.com/images/hyunshoon/post/d33417a6-4a66-4657-92b6-ff3adc4c9e3f/image.png)
 
 따라서, **EFS CSI 드라이버를 사용하는 방법으로 진행한다.**
 
