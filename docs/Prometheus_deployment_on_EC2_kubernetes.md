@@ -3,13 +3,17 @@
 
 >
 Prometheus 를 AWS EC2 k8s cluster 환경에 배포한다. (EKS에서의 배포와 다르다)
+후에 Grafana도 배포하고, Dashboard를 External-ip로 노출한다.
 
-## README 구성
-1. EFS CSI Driver를 사용하기 위한 IAM 권한 설정을 해준다.
-2. EFS, EFS CSI Driver 설치
-3. EFS Mount, pv,pvc 작동 확인
-4. prometheus 배포
-5. 배포과정에서 발생하는 prometheus-server pod STATUS == CrashLoopBackOff 해결
+## Index
+
+1. [EFS를 쓰는이유](#efs를-쓰는-이유)
+2. [들어가기에 앞서 문제 상황](#들어가기에-앞서-문제-상황)
+3. [AWS CSI Driver란?](#aws-efs-csi-driver란?)
+4. [AWS CSI Driver on Kubernetes(IAM 권한 설정)](#efs-csi-driver-on-kubernetes(iam-권한-설정))
+5. [EFS 생성부터 마운트, 프로비저닝까지](#efs-생성부터-마운트,-프로비저닝까지)
+6. [배포 과정 Trouble Shooting](#trouble-shooting)
+7. [Grafana 배포](#grafana-배포)
 
 # EFS를 쓰는 이유
 
@@ -47,7 +51,7 @@ AWS EFS CSI 드라이버는 컨테이너 오케스트레이터가 AWS EFS 파일
 EFS CSI 드라이버는 동적 프로비저닝과 정적 프로비저닝을 지원한다. 현재 동적 프로비저닝은 각 PV에 대한 엑세스 포인트를 생성한다. 즉, AWS EFS 파일 시스템은 먼저 AWS에서 생성되어야 하며 스토리지 클래스 매개변수에 대한 입력으로 제공되어야 한다. 먼저, 정적 프로비저닝을 위해서는  AWS EFS 파일시스템이 생성되어야한다. 그 후 드라이버를 사용하여 컨테이너 내부에 볼륨으로써 마운트 될 수 있다.
 
 
-# EFS CSI Driver on Kubernetes (IAM 권한 설정)
+# EFS CSI Driver on Kubernetes(IAM 권한 설정)
 
 **Set up driver permission:**
 드라이버는 유저를 대신하여 볼륨을 관리하기위해 AWS EFS와 통신하려면 IAM 퍼미션이 필요하다. 드라이버에 IAM 권한을 부여하는 방법은 여러가지가 있다.
@@ -61,7 +65,7 @@ IAM 인스턴스 프로필 사용 - worker node의 인스턴스 프로필에 정
 
 EC2이므로 2번 방법을 선택한다.
 
-## IAM 개념 정리 (instance-profile vs user vs role vs policy)
+# IAM 개념 정리 (instance-profile vs user vs role vs policy)
 
 참고사항이지만 필수적으로 알아야 한다.
 
@@ -206,6 +210,7 @@ aws ec2 associate-iam-instance-profile --iam-instance-profile Name="" --instance
 #확인
 aws ec2 describe-iam-instance-profile-associations
 ```
+# EFS 생성부터 마운트, 프로비저닝까지
 
 ## EFS 생성
 1. EFS Mount는 DNS를 사용하기 때문에 위치한 VPC의 DNS 활성화를 해줘야한다. 또한 같은 VPC에 EFS를 생성해야 한다.
@@ -358,7 +363,7 @@ Tue Nov 15 04:07:07 UTC 2022
 Tue Nov 15 04:07:12 UTC 2022
 ```
 
-pv, pvc가 정상적으로 작동한다.
+pv, pvc가 정상적으로 작동한다. 테스트를 완료했으니 삭제한다.
 
 ## helm chart 수정 후 프로메테우스 배포
 
@@ -370,6 +375,7 @@ tar zvxf prometheus-15.18.0.tgz
 ```
 value.yaml을 알맞게 수정
 
+pv, pvc를 apply후에 prometheus를 설치한다.
 ```
 k apply -f pv.yaml
 k apply -f pvc.yaml
@@ -378,6 +384,7 @@ helm install prometheus ./prometheus
 
 ![](https://velog.velcdn.com/images/hyunshoon/post/7281c81c-3b7a-4215-b472-2d8c52738da0/image.png)
 
+# Trouble Shooting
 
 ## 🤦‍♂️prometheus-server STATUS == CrashLoopBackOff 
 
@@ -507,28 +514,19 @@ Go라서 봐도 모르겠으니 일단 넘어간다.
 
 하지만, 온프레미스 환경에서 NFS-server를 사용한 remote storage 연결이 된 점을 생각해보면 이 부분은 helm 으로 설치하는 과정에서 제대로 설정되어있을 수 있다. 물론, EFS 를 사용할 때 다를 수 있지만 알아보는 우선순위를 미룬다. 
 
-### 여덟 번째 방법 AWS - Prometheus 호환 확인
-
-추가적인 설정이 필요할 수 있다.
-
-### 아홉 번째 방법 aws-csi-driver-controller
-
-현재 worker1 에만 aws-csi-driver-controller pod가 2대 띄워져있다. 이게 문제가 되는지 알아본다.
-
-### 마지막 방법 prometheus hardway
-
-helm 으로 설치하니 어떻게 구성되어있는지 몰라 디버깅이 어렵다. 수동으로 직접 설치해본다.
-
 ## 해결
 
 If a parent directory has no execute permission for some user, then that user cannot stat any subdirectories regardless of the permissions on those subdirectories.
 
-세 번째 해결 방법에서 Persisten Volume securityContext를 수정해주고,
+**세 번째 해결 방법**에서 Persisten Volume securityContext를 수정해주고,
 `chown 1000:1000 /efs/prometheus/server` 를 해주었다. 하지만 해결되지 않았는데 위의 코멘트 처럼 상위 디렉토리에는 권한이 없기 때문이다.
 
 `chown 1000:1000 /efs` 를 해주니 해결 되었다.
 
+
+
 배포는 values.yaml 을 직접 수정하지않고 아래 방법으로 한다.
+
 
 ```
  ✘ ⚡ root@master  ~/prometheus 
@@ -538,12 +536,43 @@ helm install prometheus prometheus-community/prometheus \
 --set nodeExporter.tolerations[0].key=node-role.kubernetes.io/master \
 --set nodeExporter.tolerations[0].operator=Exists \
 --set nodeExporter.tolerations[0].effect=NoSchedule \
+--set alertmanager.persistentVolume.existingClaim="prometheus-alertmanager" \
+--set alertmanager.mountPath="/efs/perometheus/alertmanager" \
 --set server.persistentVolume.existingClaim="prometheus-server" \
+--set server.mountPath="/efs/perometheus/server" \
 --set server.securityContext.runAsGroup=1000 \
 --set server.securityContext.runAsUser=1000 \
 --set server.service.type="LoadBalancer" \
 --set server.storage.tsdb.path="/efs/perometheus/server"
 ```
+
+## Grafana 배포
+
+마찬가지로 helm으로 배포한다. values.yaml 파일을 확인하여 overwrite를 해야하기 때문에 helm fetch로 grafana file을 내려받는다.
+```
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
+helm fetch grafana/grafana # grafana values.yaml 파일 보기위함
+tar xzvf grafana-6.44.6.tgz
+```
+
+values.yaml 파일 확인 후 환경에 맞게 --set 으로 overwrite한다.
+```
+helm install grafana grafana/grafana \
+--set persistence.enabled=true \
+--set persistence.existingClaim=grafana \
+--set service.type=LoadBalancer \
+--set securityContext.runAsUser=1000 \
+--set securityContext.runAsGroup=1000 \
+--set adminPassword="admin"
+```
+
+## 결과
+
+![](https://velog.velcdn.com/images/hyunshoon/post/7aed143c-7899-49df-8d73-44ff59bbffc5/image.png)
+
+grafana 배포 성공
+
 
 Reference
 
