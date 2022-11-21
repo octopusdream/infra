@@ -28,6 +28,7 @@ variable "private_subnet_c_cidr_block" {}
   
 # ##########
 variable "aws_ec2_ami" {}
+variable "aws_ec2_ami_jenkins" {}
 
 variable "aws_bastion_size" {
   description = "EC2 Instance Size of Bastion Host"
@@ -51,6 +52,10 @@ variable "aws_worker_size" {
 
 variable "aws_worker_num" {
   description = "EC2 Instance num of Worker Host"
+}
+
+variable "aws_jenkins_size" {
+  description = "EC2 Instance Size of jenkins Host"
 }
 
 # variable "a_mount" {}

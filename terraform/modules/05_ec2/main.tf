@@ -17,7 +17,9 @@ resource "aws_instance" "master1" {
     aws_instance.worker3[0],
     aws_instance.worker1[1],
     aws_instance.worker2[1],
-    aws_instance.worker3[1]
+    aws_instance.worker3[1],
+    aws_instance.master2,
+    aws_instance.master3
   ]
   user_data = "${data.template_file.master.rendered}"
 }
@@ -126,11 +128,25 @@ resource "aws_instance" "bastion" {
   user_data = "${data.template_file.user_data.rendered}"
 }
 
+resource "aws_instance" "jenkins" {
+  ami = var.aws_ec2_ami_jenkins
+  instance_type = var.aws_jenkins_size
+  key_name = "kakaokey"
+  vpc_security_group_ids = [var.sg_id]
+  subnet_id = var.private_a_subnet_id
+  availability_zone       = var.AZ_a
+ 
+  tags = {
+    Name = "${var.alltag}-jenkins"
+  }
+}
+
 data "template_file" "user_data" {
   template = "${file("./templates/bastion.tpl")}"
 
   vars = {
     key_pem = file("./templates/key.pem")
+    jenkins_ip = aws_instance.jenkins.private_ip
     master1_ip = aws_instance.master1.private_ip
     master2_ip = aws_instance.master2.private_ip
     master3_ip = aws_instance.master3.private_ip
@@ -148,6 +164,8 @@ data "template_file" "master" {
 
   vars = {
     key_pem = file("./templates/key.pem")
+    master2_ip = aws_instance.master2.private_ip
+    master3_ip = aws_instance.master3.private_ip
     worker1_ip = aws_instance.worker1[0].private_ip
     worker2_ip = aws_instance.worker1[1].private_ip
     worker3_ip = aws_instance.worker2[0].private_ip

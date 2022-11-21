@@ -6,6 +6,7 @@ variable "AZ_a" {}
 variable "AZ_b" {}
 variable "AZ_c" {}
 
+variable "aws_jenkins_size" {}
 variable "aws_bastion_size" {}
 variable "aws_master_size" {}
 variable "aws_master_num" {}
@@ -20,6 +21,7 @@ variable "private_b_subnet_id" {}
 variable "private_c_subnet_id" {} 
 
 variable "aws_ec2_ami" {}
+variable "aws_ec2_ami_jenkins" {}
 
 variable "efs_dns_name" {}
 

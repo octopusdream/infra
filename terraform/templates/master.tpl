@@ -1,9 +1,15 @@
 #!/bin/bash
 
-sudo apt install net-tools
+sudo apt -y install net-tools vim
 # sudo hostnamectl set-hostname master
 
+sudo echo "alias k='kubectl'
+alias vi='vim'" >> ~/.bashrc
+sudo source ~/.bashrc
+
 sudo echo "
+${master2_ip}  master2
+${master3_ip}  master3
 ${worker1_ip}  worker1
 ${worker2_ip}  worker2
 ${worker3_ip}  worker3
@@ -16,6 +22,8 @@ sudo touch  ~/.ssh/kakaokey
 echo "${key_pem}" > ~/.ssh/kakaokey
 sudo chmod 600 ~/.ssh/kakaokey
 
+ssh-keyscan master2 >> ~/.ssh/known_hosts
+ssh-keyscan master3 >> ~/.ssh/known_hosts
 ssh-keyscan worker1 >> ~/.ssh/known_hosts
 ssh-keyscan worker2 >> ~/.ssh/known_hosts
 ssh-keyscan worker3 >> ~/.ssh/known_hosts
@@ -93,6 +101,19 @@ sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker6
 sleep 1
 
 
+sudo echo "$(cat ~/token_file)
+# mkdir -p /root/.kube
+# sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
+# sudo chown 0:0 /root/.kube/config
+# export KUBECONFIG=/etc/kubernetes/admin.conf
+" > ~/token_file_2
+
+sudo cat ~/token_file_2 | ssh -i ~/.ssh/kakaokey ubuntu@master2
+sleep 1
+sudo cat ~/token_file_2 | ssh -i ~/.ssh/kakaokey ubuntu@master3
+sleep 1
+
+
 # ##### calico #####
 sudo curl -O -L https://raw.githubusercontent.com/projectcalico/calico/v3.24.5/manifests/custom-resources.yaml -O
 sudo kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
@@ -117,7 +138,8 @@ metadata:
 spec:
   blockSize: 26
   cidr: 192.168.0.0/16
-  ipipMode: Always
+#   ipipMode: Always
+  ipipMode: CrossSubnet
   natOutgoing: true
   nodeSelector: all()
   vxlanMode: Never" > ~/calico-ipool.yaml
@@ -196,3 +218,6 @@ Host worker6
 " >> ~/.ssh/config
 
 sudo rm -rf ~/.ssh/kakaokey
+sudo rm -rf ~/token_file
+sudo rm -rf ~/token_file_2
+rm -rf calico-ipool.yaml

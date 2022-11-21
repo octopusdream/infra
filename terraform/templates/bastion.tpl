@@ -2,7 +2,10 @@
 
 sudo hostnamectl set-hostname bastion
 sudo su
-sudo apt install net-tools
+sudo apt -y install net-tools vim
+
+sudo echo "alias vi='vim'" >> ~/.bashrc
+sudo source ~/.bashrc
 
 echo "${master1_ip}  master1
 ${master2_ip}  master2
@@ -13,6 +16,7 @@ ${worker3_ip}  worker3
 ${worker4_ip}  worker4
 ${worker5_ip}  worker5
 ${worker6_ip}  worker6
+${jenkins_ip}  jenkins
 " >> /etc/hosts
 
 touch ~/.ssh/kakaokey
@@ -28,6 +32,7 @@ ssh-keyscan worker3 >> ~/.ssh/known_hosts
 ssh-keyscan worker4 >> ~/.ssh/known_hosts
 ssh-keyscan worker5 >> ~/.ssh/known_hosts
 ssh-keyscan worker6 >> ~/.ssh/known_hosts
+ssh-keyscan jenkins >> ~/.ssh/known_hosts
 
 echo "
 Host master1
@@ -72,6 +77,11 @@ Host worker5
 
 Host worker6
 	Hostname worker6
+	IdentityFile ~/.ssh/kakaokey
+	User ubuntu
+
+Host jenkins
+	Hostname jenkins
 	IdentityFile ~/.ssh/kakaokey
 	User ubuntu
 " >> ~/.ssh/config

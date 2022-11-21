@@ -65,12 +65,14 @@ module "ec2" {
   depends_on = [module.efs]
 
   aws_bastion_size = var.aws_bastion_size
+  aws_jenkins_size = var.aws_jenkins_size
   aws_master_num = var.aws_master_num
   aws_master_size = var.aws_master_size
   aws_worker_num = var.aws_worker_num
   aws_worker_size = var.aws_worker_size
   
   aws_ec2_ami = var.aws_ec2_ami
+  aws_ec2_ami_jenkins = var.aws_ec2_ami_jenkins
   sg_id = module.sg.sg_id
   
   efs_dns_name = module.efs.efs_dns_name

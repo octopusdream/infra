@@ -1,7 +1,11 @@
 #!/bin/bash
 
-sudo apt install net-tools
+sudo apt -y install net-tools
 # sudo hostnamectl set-hostname master
+
+sudo echo "alias k='kubectl'
+alias vi='vim'" >> ~/.bashrc
+sudo source ~/.bashrc
 
 sudo echo "
 ${worker1_ip}  worker1
