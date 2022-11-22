@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo hostnamectl set-hostname bastion
+sudo hostnamectl set-hostname $(curl -s http://169.254.169.254/latest/meta-data/local-hostname)
 sudo su
 sudo apt -y install net-tools vim
 

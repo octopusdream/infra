@@ -1,7 +1,8 @@
 #!/bin/bash
 
 sudo apt -y install net-tools
-# sudo hostnamectl set-hostname master
+sudo hostnamectl set-hostname $(curl -s http://169.254.169.254/latest/meta-data/local-hostname)
+sudo su
 
 sudo echo "alias k='kubectl'
 alias vi='vim'" >> ~/.bashrc
@@ -69,6 +70,18 @@ sudo apt-get install -y kubelet=1.21.1-00 kubeadm=1.21.1-00 kubectl=1.21.1-00
 
 # 5. 업그레이드로 인한 버전업 방지
 sudo apt-mark hold docker-ce kubelet kubeadm kubectl
+
+
+
+###### AWS Controller Manager #####
+# kustomize 설치
+wget https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.5.6/kustomize_v4.5.6_linux_amd64.tar.gz
+gzip -d kustomize_v4.5.6_linux_amd64.tar.gz
+tar xvf kustomize_v4.5.6_linux_amd64.tar
+mv ./kustomize  /usr/bin
+
+# 매니페스트 파일 설치
+kustomize build 'github.com/kubernetes/cloud-provider-aws/examples/existing-cluster/overlays/superset-role/?ref=master' | kubectl apply -f -
 
 
 #### ansible #####

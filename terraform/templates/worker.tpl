@@ -1,6 +1,8 @@
 #!/bin/bash
 
 sudo apt install net-tools vim
+sudo hostnamectl set-hostname $(curl -s http://169.254.169.254/latest/meta-data/local-hostname)
+sudo su
 
 sudo echo "alias vi='vim'" >> ~/.bashrc
 sudo source ~/.bashrc

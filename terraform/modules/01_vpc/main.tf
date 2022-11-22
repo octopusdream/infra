@@ -23,9 +23,13 @@ resource "aws_subnet" "pub_a" {
     cidr_block              = var.public_subnet_a_cidr_block
     map_public_ip_on_launch = true #퍼블릭 IP 자동 부여 설정
     availability_zone       = var.AZ_a
-    tags = {
-        "Name"              = "${var.alltag}-pub-a"
-    }
+    # tags = {
+    #     "Name"              = "${var.alltag}-pub-a"
+    # }
+    tags = [
+        "kubernetes.io/role/elb, 1",
+        "kubernetes.io/cluster/jordy,owned|shared"
+    ]
     depends_on              = [aws_vpc.vpc]
 }
 
@@ -35,9 +39,13 @@ resource "aws_subnet" "pub_b" {
     cidr_block              = var.public_subnet_b_cidr_block
     map_public_ip_on_launch = true #퍼블릭 IP 자동 부여 설정
     availability_zone       = var.AZ_b 
-    tags = {
-        "Name"              = "${var.alltag}-pub-b"
-    }
+    # tags = {
+    #     "Name"              = "${var.alltag}-pub-b"
+    # }
+    tags = [
+        "kubernetes.io/role/elb, 1",
+        "kubernetes.io/cluster/jordy,owned|shared"
+    ]
     depends_on              = [aws_vpc.vpc]
 }
 
@@ -47,9 +55,13 @@ resource "aws_subnet" "pub_c" {
     cidr_block              = var.public_subnet_c_cidr_block
     map_public_ip_on_launch = true #퍼블릭 IP 자동 부여 설정
     availability_zone       = var.AZ_c
-    tags = {
-        "Name"              = "${var.alltag}-pub-c"
-    }
+    # tags = {
+    #     "Name"              = "${var.alltag}-pub-c"
+    # }
+    tags = [
+        "kubernetes.io/role/elb, 1",
+        "kubernetes.io/cluster/jordy,owned|shared"
+    ]
     depends_on              = [aws_vpc.vpc]
 }
 
@@ -59,9 +71,13 @@ resource "aws_subnet" "pri_a" {
     cidr_block              = var.private_subnet_a_cidr_block
     map_public_ip_on_launch = false #퍼블릭 IP 자동 부여 설정
     availability_zone       = var.AZ_a
-    tags = {
-        "Name"              = "${var.alltag}-pri-a"
-    }
+    # tags = {
+    #     "Name"              = "${var.alltag}-pri-a"
+    # }
+    tags = [
+        "kubernetes.io/role/internal-elb, 1",
+        "kubernetes.io/cluster/jordy,owned|shared"
+    ]
     depends_on              = [aws_vpc.vpc]
 }
 
@@ -71,9 +87,13 @@ resource "aws_subnet" "pri_b" {
     cidr_block              = var.private_subnet_b_cidr_block
     map_public_ip_on_launch = false #퍼블릭 IP 자동 부여 설정
     availability_zone       = var.AZ_b
-    tags = {
-        "Name"              = "${var.alltag}-pri-b"
-    }
+    # tags = {
+    #     "Name"              = "${var.alltag}-pri-b"
+    # }
+    tags = [
+        "kubernetes.io/role/internal-elb, 1",
+        "kubernetes.io/cluster/jordy,owned|shared"
+    ]
     depends_on              = [aws_vpc.vpc]
 }
 
@@ -83,9 +103,13 @@ resource "aws_subnet" "pri_c" {
     cidr_block              = var.private_subnet_c_cidr_block
     map_public_ip_on_launch = false #퍼블릭 IP 자동 부여 설정 
     availability_zone       = var.AZ_c
-    tags = {
-        "Name"              = "${var.alltag}-pri-c"
-    }
+    # tags = {
+    #     "Name"              = "${var.alltag}-pri-c"
+    # }
+    tags = [
+        "kubernetes.io/role/internal-elb, 1",
+        "kubernetes.io/cluster/jordy,owned|shared"
+    ]
     depends_on              = [aws_vpc.vpc]
 }
 
@@ -97,9 +121,10 @@ resource "aws_route_table" "pub_rt" {
         cidr_block          = "0.0.0.0/0"
         gateway_id          = aws_internet_gateway.igw.id
     }
-    tags = {
-        "Name"              = "${var.alltag}-pub-rt"
-    }
+    # tags = {
+    #     "Name"              = "${var.alltag}-pub-rt"
+    # }
+    tags = "kubernetes.io/cluster/jordy,owned|shared"
     depends_on              = [aws_internet_gateway.igw]
 }
 
@@ -194,9 +219,10 @@ resource "aws_route_table" "pria_rt" {
         cidr_block           = "0.0.0.0/0"
         gateway_id           = aws_nat_gateway.ngw_pria.id
     }
-    tags = {
-        "Name"               = "${var.alltag}-pria-rt"
-    }
+    # tags = {
+    #     "Name"               = "${var.alltag}-pria-rt"
+    # }
+    tags = "kubernetes.io/cluster/jordy,owned|shared"
 }
 
 resource "aws_route_table" "prib_rt" {
@@ -205,9 +231,10 @@ resource "aws_route_table" "prib_rt" {
         cidr_block           = "0.0.0.0/0"
         gateway_id           = aws_nat_gateway.ngw_prib.id
     }
-    tags = {
-        "Name"               = "${var.alltag}-prib-rt"
-    }
+    # tags = {
+    #     "Name"               = "${var.alltag}-prib-rt"
+    # }
+    tags = "kubernetes.io/cluster/jordy,owned|shared"
 }
 
 resource "aws_route_table" "pric_rt" {
@@ -216,9 +243,10 @@ resource "aws_route_table" "pric_rt" {
         cidr_block           = "0.0.0.0/0"
         gateway_id           = aws_nat_gateway.ngw_pric.id
     }
-    tags = {
-        "Name"               = "${var.alltag}-pric-rt"
-    }
+    # tags = {
+    #     "Name"               = "${var.alltag}-pric-rt"
+    # }
+    tags = "kubernetes.io/cluster/jordy,owned|shared"
 }
 
 # pubvate subnet & not Gateway의 정보가 포함된 routing table id 연결

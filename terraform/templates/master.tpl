@@ -1,7 +1,8 @@
 #!/bin/bash
 
 sudo apt -y install net-tools vim
-# sudo hostnamectl set-hostname master
+sudo hostnamectl set-hostname $(curl -s http://169.254.169.254/latest/meta-data/local-hostname)
+sudo su
 
 sudo echo "alias k='kubectl'
 alias vi='vim'" >> ~/.bashrc
@@ -101,22 +102,34 @@ sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker6
 sleep 1
 
 
-sudo echo "$(cat ~/token_file)
-# mkdir -p /root/.kube
-# sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
-# sudo chown 0:0 /root/.kube/config
-# export KUBECONFIG=/etc/kubernetes/admin.conf
-" > ~/token_file_2
+# sudo echo "$(cat ~/token_file)
+# # mkdir -p /root/.kube
+# # sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
+# # sudo chown 0:0 /root/.kube/config
+# # export KUBECONFIG=/etc/kubernetes/admin.conf
+# " > ~/token_file_2
 
-sudo cat ~/token_file_2 | ssh -i ~/.ssh/kakaokey ubuntu@master2
-sleep 1
-sudo cat ~/token_file_2 | ssh -i ~/.ssh/kakaokey ubuntu@master3
-sleep 1
+# sudo cat ~/token_file_2 | ssh -i ~/.ssh/kakaokey ubuntu@master2
+# sleep 1
+# sudo cat ~/token_file_2 | ssh -i ~/.ssh/kakaokey ubuntu@master3
+# sleep 1
+
+
+###### AWS Controller Manager #####
+# kustomize 설치
+wget https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.5.6/kustomize_v4.5.6_linux_amd64.tar.gz
+gzip -d kustomize_v4.5.6_linux_amd64.tar.gz
+tar xvf kustomize_v4.5.6_linux_amd64.tar
+mv ./kustomize  /usr/bin
+
+# 매니페스트 파일 설치
+kustomize build 'github.com/kubernetes/cloud-provider-aws/examples/existing-cluster/overlays/superset-role/?ref=master' | kubectl apply -f -
 
 
 # ##### calico #####
-sudo curl -O -L https://raw.githubusercontent.com/projectcalico/calico/v3.24.5/manifests/custom-resources.yaml -O
-sudo kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+# sudo curl -O -L https://raw.githubusercontent.com/projectcalico/calico/v3.24.5/manifests/custom-resources.yaml -O
+# sudo kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
 
 
 # ##### calicoctl #####

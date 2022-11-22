@@ -3,9 +3,10 @@ resource "aws_security_group" "http" {
     name = "allow_http"
     description = "Allow  http inbound traffic"
 
-    tags = {
-      "Name" = "${var.alltag}-allow-http"
-    }
+    # tags = {
+    #   "Name" = "${var.alltag}-allow-http"
+    # }
+  tags = "kubernetes.io/cluster/jordy, owned|shared"
 }
 
 resource "aws_security_group_rule" "allow_custom_ingress" {

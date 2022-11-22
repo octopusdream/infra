@@ -7,10 +7,10 @@ resource "aws_instance" "master1" {
   availability_zone       = var.AZ_a
   associate_public_ip_address = false
   source_dest_check = false
- 
-  tags = {
-    Name = "${var.alltag}-master-a"
-  }
+
+  iam_instance_profile = ""
+  tags = "kubernetes.io/cluster/jordy,owned|shared"
+
   depends_on = [
     aws_instance.worker1[0],
     aws_instance.worker2[0],
@@ -35,9 +35,12 @@ resource "aws_instance" "worker1" {
   associate_public_ip_address = false
   source_dest_check = false
  
-  tags = {
-    Name = "${var.alltag}-worker-a-${count.index + 1}"
-  }
+  # tags = {
+  #   Name = "${var.alltag}-worker-a-${count.index + 1}"
+  # }
+  iam_instance_profile = ""
+  tags = "kubernetes.io/cluster/jordy,owned|shared"
+  
   user_data = "${data.template_file.worker.rendered}"
 }
 
@@ -51,9 +54,12 @@ resource "aws_instance" "master2" {
   associate_public_ip_address = false
   source_dest_check = false
 
-  tags = {
-    Name = "${var.alltag}-master-b"
-  }
+  # tags = {
+  #   Name = "${var.alltag}-master-b"
+  # }
+  iam_instance_profile = ""
+  tags = "kubernetes.io/cluster/jordy,owned|shared"
+
   user_data = "${data.template_file.master_2.rendered}"
 }
 
@@ -68,9 +74,11 @@ resource "aws_instance" "worker2" {
   associate_public_ip_address = false
   source_dest_check = false
  
-  tags = {
-    Name = "${var.alltag}-worker-b-${count.index + 1}"
-  }
+  # tags = {
+  #   Name = "${var.alltag}-worker-b-${count.index + 1}"
+  # }
+  iam_instance_profile = ""
+  tags = "kubernetes.io/cluster/jordy,owned|shared"
 
   user_data = "${data.template_file.worker.rendered}"
 }
@@ -85,9 +93,13 @@ resource "aws_instance" "master3" {
   associate_public_ip_address = false
   source_dest_check = false
  
-  tags = {
-    Name = "${var.alltag}-master-c"
-  }
+  # tags = {
+  #   Name = "${var.alltag}-master-c"
+  # }
+
+  iam_instance_profile = ""
+  tags = "kubernetes.io/cluster/jordy,owned|shared"
+
   depends_on = [
     aws_instance.worker1,
     aws_instance.worker2,
@@ -107,9 +119,12 @@ resource "aws_instance" "worker3" {
   associate_public_ip_address = false
   source_dest_check = false
  
-  tags = {
-    Name = "${var.alltag}-worker-c-${count.index + 1}"
-  }
+  # tags = {
+  #   Name = "${var.alltag}-worker-c-${count.index + 1}"
+  # }
+
+  iam_instance_profile = ""
+  tags = "kubernetes.io/cluster/jordy,owned|shared"
 
   user_data = "${data.template_file.worker.rendered}"
 }
@@ -122,9 +137,13 @@ resource "aws_instance" "bastion" {
   subnet_id = var.public_a_subnet_id
   availability_zone       = var.AZ_a
  
-  tags = {
-    Name = "${var.alltag}-bastion"
-  }
+  # tags = {
+  #   Name = "${var.alltag}-bastion"
+  # }
+
+  iam_instance_profile = ""
+  tags = "kubernetes.io/cluster/jordy,owned|shared"
+
   user_data = "${data.template_file.user_data.rendered}"
 }
 
@@ -136,9 +155,12 @@ resource "aws_instance" "jenkins" {
   subnet_id = var.private_a_subnet_id
   availability_zone       = var.AZ_a
  
-  tags = {
-    Name = "${var.alltag}-jenkins"
-  }
+  # tags = {
+  #   Name = "${var.alltag}-jenkins"
+  # }
+
+  iam_instance_profile = ""
+  tags = "kubernetes.io/cluster/jordy,owned|shared"
 }
 
 data "template_file" "user_data" {
