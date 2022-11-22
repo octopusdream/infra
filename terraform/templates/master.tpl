@@ -76,30 +76,30 @@ sudo apt-get install -y kubelet=1.21.1-00 kubeadm=1.21.1-00 kubectl=1.21.1-00
 sudo apt-mark hold docker-ce kubelet kubeadm kubectl
 
 
-##### kubeadm init ###
-sudo kubeadm init --pod-network-cidr=192.168.0.0/16 | tail -n 2 >> ~/token_file
-sudo echo "sudo $(cat ~/token_file)" > ~/token_file
+# ##### kubeadm init ###
+# sudo kubeadm init --pod-network-cidr=192.168.0.0/16 | tail -n 2 >> ~/token_file
+# sudo echo "sudo $(cat ~/token_file)" > ~/token_file
 
-mkdir -p /root/.kube
-sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
-sudo chown 0:0 /root/.kube/config
+# mkdir -p /root/.kube
+# sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
+# sudo chown 0:0 /root/.kube/config
 
-export KUBECONFIG=/etc/kubernetes/admin.conf
+# export KUBECONFIG=/etc/kubernetes/admin.conf
 
 
-##### kubeadm join #####
-sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker1
-sleep 1
-sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker2
-sleep 1
-sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker3
-sleep 1
-sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker4
-sleep 1
-sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker5
-sleep 1
-sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker6
-sleep 1
+# ##### kubeadm join #####
+# sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker1
+# sleep 1
+# sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker2
+# sleep 1
+# sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker3
+# sleep 1
+# sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker4
+# sleep 1
+# sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker5
+# sleep 1
+# sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker6
+# sleep 1
 
 
 # sudo echo "$(cat ~/token_file)
@@ -126,37 +126,37 @@ mv ./kustomize  /usr/bin
 kustomize build 'github.com/kubernetes/cloud-provider-aws/examples/existing-cluster/overlays/superset-role/?ref=master' | kubectl apply -f -
 
 
-# ##### calico #####
-# sudo curl -O -L https://raw.githubusercontent.com/projectcalico/calico/v3.24.5/manifests/custom-resources.yaml -O
-# sudo kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
-kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+# # ##### calico #####
+# # sudo curl -O -L https://raw.githubusercontent.com/projectcalico/calico/v3.24.5/manifests/custom-resources.yaml -O
+# # sudo kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+# kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
 
 
-# ##### calicoctl #####
-# 현재 경로에 calicoctl binary 다운로드
-sudo curl -O -L  https://github.com/projectcalico/calicoctl/releases/download/v3.17.1/calicoctl
-# +x 모드 추가 
-sudo chmod +x calicoctl
-# 아무 경로에서 사용 가능하도록 PATH에 등록된 곳(ex: /usr/local/bin)으로 파일 이동
-sudo mv calicoctl /usr/local/bin
-# #####################
+# # ##### calicoctl #####
+# # 현재 경로에 calicoctl binary 다운로드
+# sudo curl -O -L  https://github.com/projectcalico/calicoctl/releases/download/v3.17.1/calicoctl
+# # +x 모드 추가 
+# sudo chmod +x calicoctl
+# # 아무 경로에서 사용 가능하도록 PATH에 등록된 곳(ex: /usr/local/bin)으로 파일 이동
+# sudo mv calicoctl /usr/local/bin
+# # #####################
 
 
-# ippool manifast 수정
-# .spec.ipipMode를 'Always'로 변경시, ipip Mode가 활성화
-sudo echo "apiVersion: projectcalico.org/v3
-kind: IPPool
-metadata:
-  name: default-ipv4-ippool
-spec:
-  blockSize: 26
-  cidr: 192.168.0.0/16
-#   ipipMode: Always
-  ipipMode: CrossSubnet
-  natOutgoing: true
-  nodeSelector: all()
-  vxlanMode: Never" > ~/calico-ipool.yaml
-sudo calicoctl apply -f ~/calico-ipool.yaml
+# # ippool manifast 수정
+# # .spec.ipipMode를 'Always'로 변경시, ipip Mode가 활성화
+# sudo echo "apiVersion: projectcalico.org/v3
+# kind: IPPool
+# metadata:
+#   name: default-ipv4-ippool
+# spec:
+#   blockSize: 26
+#   cidr: 192.168.0.0/16
+# #   ipipMode: Always
+#   ipipMode: CrossSubnet
+#   natOutgoing: true
+#   nodeSelector: all()
+#   vxlanMode: Never" > ~/calico-ipool.yaml
+# sudo calicoctl apply -f ~/calico-ipool.yaml
 
 
 #### ansible #####

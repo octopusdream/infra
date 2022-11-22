@@ -106,8 +106,8 @@ module "auto_scaling" {
 
 
 
-#backend "s3"는 사용할 backend가 s3임을 의미한다.
-# --> terraform apply 후에 주석 해제하고 init 해주면 bucket에 .tfstate파일이 업데이트 된다.
+# #backend "s3"는 사용할 backend가 s3임을 의미한다.
+# # --> terraform apply 후에 주석 해제하고 init 해주면 bucket에 .tfstate파일이 업데이트 된다.
 
 # terraform {
 #  backend "s3" {
@@ -119,8 +119,8 @@ module "auto_scaling" {
 #  }
 # }
 
-#bucket : 사용할 S3 버킷명
-#key : 테라폼 state 파일을 기록할 S3 버킷 내의 파일 경로
-#region : S3 버킷이 있는 지역
-#encrypt : 테라폼 state 파일 암호화 여부
-#dynamodb_table : 사용할 DynamoDB table명
+# #bucket : 사용할 S3 버킷명
+# #key : 테라폼 state 파일을 기록할 S3 버킷 내의 파일 경로
+# #region : S3 버킷이 있는 지역
+# #encrypt : 테라폼 state 파일 암호화 여부
+# #dynamodb_table : 사용할 DynamoDB table명

@@ -2,11 +2,11 @@ resource "aws_security_group" "http" {
     vpc_id = var.vpc_id
     name = "allow_http"
     description = "Allow  http inbound traffic"
-
-    # tags = {
-    #   "Name" = "${var.alltag}-allow-http"
-    # }
-  tags = "kubernetes.io/cluster/jordy, owned|shared"
+    
+    tags = {
+        "Name" = "${var.alltag}-allow-http"
+        "kubernetes.io/cluster/jordy" = "owned|shared"
+    }
 }
 
 resource "aws_security_group_rule" "allow_custom_ingress" {
