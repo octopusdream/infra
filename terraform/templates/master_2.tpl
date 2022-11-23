@@ -105,7 +105,7 @@ sleep 1
 sudo cat ~/token_file | ssh -i ~/.ssh/id_rsa ubuntu@worker6
 sleep 1
 
-ssh-keyscan worker1 > ~/.ssh/known_hosts
+ssh-keyscan worker1 >> ~/.ssh/known_hosts
 ssh-keyscan worker2 >> ~/.ssh/known_hosts
 ssh-keyscan worker3 >> ~/.ssh/known_hosts
 ssh-keyscan worker4 >> ~/.ssh/known_hosts

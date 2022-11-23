@@ -10,7 +10,7 @@ resource "aws_instance" "master1" {
   
   iam_instance_profile = aws_iam_instance_profile.master_profile.name
   tags = {
-    name = "${var.alltag}-master-a"
+    Name = "${var.alltag}-master-a"
     "kubernetes.io/cluster/jordy" = "owned|shared"
   }
 

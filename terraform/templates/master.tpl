@@ -19,6 +19,39 @@ ${worker5_ip}  worker5
 ${worker6_ip}  worker6
 " >> /etc/hosts
 
+
+sudo echo "
+Host worker1
+	Hostname worker1
+	IdentityFile ~/.ssh/kakaokey
+	User ubuntu
+
+Host worker2
+	Hostname worker2
+	IdentityFile ~/.ssh/kakaokey
+	User ubuntu
+
+Host worker3
+	Hostname worker3
+	IdentityFile ~/.ssh/kakaokey
+	User ubuntu
+
+Host worker4
+	Hostname worker4
+	IdentityFile ~/.ssh/kakaokey
+	User ubuntu
+
+Host worker5
+	Hostname worker5
+	IdentityFile ~/.ssh/kakaokey
+	User ubuntu
+
+Host worker6
+	Hostname worker6
+	IdentityFile ~/.ssh/kakaokey
+	User ubuntu
+" >> ~/.ssh/config
+
 sudo touch  ~/.ssh/kakaokey
 echo "${key_pem}" > ~/.ssh/kakaokey
 sudo chmod 600 ~/.ssh/kakaokey
@@ -77,42 +110,103 @@ sudo apt-mark hold docker-ce kubelet kubeadm kubectl
 
 
 # ##### kubeadm init ###
-# sudo kubeadm init --pod-network-cidr=192.168.0.0/16 | tail -n 2 >> ~/token_file
-# sudo echo "sudo $(cat ~/token_file)" > ~/token_file
+echo "# control-plane.yaml
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: ClusterConfiguration
+apiServer:
+  extraArgs:
+    authorization-mode: Node,RBAC
+    cloud-provider: aws  # cloud-provider 옵션 추가
+  timeoutForControlPlane: 4m0s
+certificatesDir: /etc/kubernetes/pki
+clusterName: jordy  # 태그에 지정할 클러스터 이름을 명시
+controlPlaneEndpoint: ""
+controllerManager:
+  extraArgs:
+    cloud-provider: aws  # cloud-provider 옵션 추가
+dns:
+  type: CoreDNS
+etcd:
+  local:
+    dataDir: /var/lib/etcd
+imageRepository: k8s.gcr.io
 
-# mkdir -p /root/.kube
-# sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
-# sudo chown 0:0 /root/.kube/config
+networking:
+  dnsDomain: cluster.local
+  podSubnet: 192.168.0.0/16
+  serviceSubnet: 10.96.0.0/12
+scheduler: {}
+---
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: InitConfiguration
+nodeRegistration:
+  kubeletExtraArgs:
+    cloud-provider: aws  # cloud-provider 옵션 추가" > control-plane.yaml
+kubeadm init --config control-plane.yaml
 
-# export KUBECONFIG=/etc/kubernetes/admin.conf
+mkdir -p /root/.kube
+sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
+sudo chown 0:0 /root/.kube/config
+
+export KUBECONFIG=/etc/kubernetes/admin.conf
 
 
 # ##### kubeadm join #####
-# sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker1
-# sleep 1
-# sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker2
-# sleep 1
-# sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker3
-# sleep 1
-# sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker4
-# sleep 1
-# sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker5
-# sleep 1
-# sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker6
-# sleep 1
+echo -n "#!" > /home/ubuntu/worker.sh
+sudo echo "/bin/bash
 
+# worker.yaml
+sudo echo \"apiVersion: kubeadm.k8s.io/v1beta2
+kind: JoinConfiguration
+discovery:
+  bootstrapToken:
+    token: $(sudo kubeadm token list | cut -d ' ' -f 1 | sed '1d') # token 값
+    apiServerEndpoint: \\\"$(ip a | grep '10.0.3.' | cut -d ' ' -f 6 | cut -d '/' -f 1):6443\\\" # HA가 구축되지 않은 경우
+    caCertHashes:
+      - sha256:$(openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //') # hash 값
+nodeRegistration:
+  name: ip-10-0-\$(ip a | grep '10.0.' | cut -d ' ' -f 6 | cut -d '/' -f 1 | cut -d '.' -f 3)-\$(ip a | grep '10.0.' | cut -d ' ' -f 6 | cut -d '/' -f 1 | cut -d '.' -f 4).ap-northeast-3.compute.internal # worker hostname
+  kubeletExtraArgs:
+    cloud-provider: aws  # cloud-provider 옵션 추가\" > worker.yaml
 
-# sudo echo "$(cat ~/token_file)
-# # mkdir -p /root/.kube
-# # sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
-# # sudo chown 0:0 /root/.kube/config
-# # export KUBECONFIG=/etc/kubernetes/admin.conf
-# " > ~/token_file_2
+sudo kubeadm join --config worker.yaml
+" >> /home/ubuntu/worker.sh
 
-# sudo cat ~/token_file_2 | ssh -i ~/.ssh/kakaokey ubuntu@master2
-# sleep 1
-# sudo cat ~/token_file_2 | ssh -i ~/.ssh/kakaokey ubuntu@master3
-# sleep 1
+File=/home/ubuntu/worker.sh
+while :
+do
+  if [ -f "$File" ]; then
+  	sudo scp /home/ubuntu/worker.sh ubuntu@worker1:/home/ubuntu/worker.sh
+	sleep 1
+	sudo scp /home/ubuntu/worker.sh ubuntu@worker2:/home/ubuntu/worker.sh
+	sleep 1
+	sudo scp /home/ubuntu/worker.sh ubuntu@worker3:/home/ubuntu/worker.sh
+	sleep 1
+	sudo scp /home/ubuntu/worker.sh ubuntu@worker4:/home/ubuntu/worker.sh
+	sleep 1
+	sudo scp /home/ubuntu/worker.sh ubuntu@worker5:/home/ubuntu/worker.sh
+	sleep 1
+	sudo scp /home/ubuntu/worker.sh ubuntu@worker6:/home/ubuntu/worker.sh
+	sleep 1
+
+	sudo ssh ubuntu@worker1 "sh worker.sh"
+	sleep 1
+	sudo ssh ubuntu@worker2 "sh worker.sh"
+	sleep 1
+	sudo ssh ubuntu@worker3 "sh worker.sh"
+	sleep 1
+	sudo ssh ubuntu@worker4 "sh worker.sh"
+	sleep 1
+	sudo ssh ubuntu@worker5 "sh worker.sh"
+	sleep 1
+	sudo ssh ubuntu@worker6 "sh worker.sh"
+	sleep 1
+    break
+  else
+    sleep 1
+  fi
+done
+
 
 
 ###### AWS Controller Manager #####
@@ -126,68 +220,37 @@ mv ./kustomize  /usr/bin
 kustomize build 'github.com/kubernetes/cloud-provider-aws/examples/existing-cluster/overlays/superset-role/?ref=master' | kubectl apply -f -
 
 
-# # ##### calico #####
-# # sudo curl -O -L https://raw.githubusercontent.com/projectcalico/calico/v3.24.5/manifests/custom-resources.yaml -O
-# # sudo kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
-# kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+##### calico #####
+sudo kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+
+##### calicoctl #####
+# 현재 경로에 calicoctl binary 다운로드
+sudo curl -O -L  https://github.com/projectcalico/calicoctl/releases/download/v3.17.1/calicoctl
+# +x 모드 추가 
+sudo chmod +x calicoctl
+# 아무 경로에서 사용 가능하도록 PATH에 등록된 곳(ex: /usr/local/bin)으로 파일 이동
+sudo mv calicoctl /usr/local/bin
+#####################
 
 
-# # ##### calicoctl #####
-# # 현재 경로에 calicoctl binary 다운로드
-# sudo curl -O -L  https://github.com/projectcalico/calicoctl/releases/download/v3.17.1/calicoctl
-# # +x 모드 추가 
-# sudo chmod +x calicoctl
-# # 아무 경로에서 사용 가능하도록 PATH에 등록된 곳(ex: /usr/local/bin)으로 파일 이동
-# sudo mv calicoctl /usr/local/bin
-# # #####################
+# ippool manifast 수정
+# .spec.ipipMode를 'Always'로 변경시, ipip Mode가 활성화
+sudo echo "apiVersion: projectcalico.org/v3
+kind: IPPool
+metadata:
+name: default-ipv4-ippool
+spec:
+blockSize: 26
+cidr: 192.168.0.0/16
+#   ipipMode: Always
+ipipMode: CrossSubnet
+natOutgoing: true
+nodeSelector: all()
+vxlanMode: Never" > ~/calico-ipool.yaml
+sudo calicoctl apply -f ~/calico-ipool.yaml
 
-
-# # ippool manifast 수정
-# # .spec.ipipMode를 'Always'로 변경시, ipip Mode가 활성화
-# sudo echo "apiVersion: projectcalico.org/v3
-# kind: IPPool
-# metadata:
-#   name: default-ipv4-ippool
-# spec:
-#   blockSize: 26
-#   cidr: 192.168.0.0/16
-# #   ipipMode: Always
-#   ipipMode: CrossSubnet
-#   natOutgoing: true
-#   nodeSelector: all()
-#   vxlanMode: Never" > ~/calico-ipool.yaml
-# sudo calicoctl apply -f ~/calico-ipool.yaml
-
-
-#### ansible #####
+##### ansible #####
 sudo apt install -y ansible
-
-# id_rsa
-sudo ssh-keygen -q -f ~/.ssh/id_rsa -N ""
-sudo chmod 600 ~/.ssh/id_rsa
-sudo echo "sudo echo \"$(cat ~/.ssh/id_rsa.pub)\" > ~/.ssh/authorized_keys" > ~/token_file
-
-sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker1
-sleep 1
-sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker2
-sleep 1
-sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker3
-sleep 1
-sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker4
-sleep 1
-sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker5
-sleep 1
-sudo cat ~/token_file | ssh -i ~/.ssh/kakaokey ubuntu@worker6
-sleep 1
-
-ssh-keyscan worker1 > ~/.ssh/known_hosts
-ssh-keyscan worker2 >> ~/.ssh/known_hosts
-ssh-keyscan worker3 >> ~/.ssh/known_hosts
-ssh-keyscan worker4 >> ~/.ssh/known_hosts
-ssh-keyscan worker5 >> ~/.ssh/known_hosts
-ssh-keyscan worker6 >> ~/.ssh/known_hosts
-
-
 sudo mkdir /etc/ansible
 echo "worker1
 worker2
@@ -197,40 +260,10 @@ worker5
 worker6
 " >> /etc/ansible/hosts
 
-
-sudo echo "
-Host worker1
-	Hostname worker1
-	IdentityFile ~/.ssh/id_rsa
-	User ubuntu
-
-Host worker2
-	Hostname worker2
-	IdentityFile ~/.ssh/id_rsa
-	User ubuntu
-
-Host worker3
-	Hostname worker3
-	IdentityFile ~/.ssh/id_rsa
-	User ubuntu
-
-Host worker4
-	Hostname worker4
-	IdentityFile ~/.ssh/id_rsa
-	User ubuntu
-
-Host worker5
-	Hostname worker5
-	IdentityFile ~/.ssh/id_rsa
-	User ubuntu
-
-Host worker6
-	Hostname worker6
-	IdentityFile ~/.ssh/id_rsa
-	User ubuntu
-" >> ~/.ssh/config
-
-sudo rm -rf ~/.ssh/kakaokey
+##### delete ######
+# sudo rm -rf ~/.ssh/kakaokey
 sudo rm -rf ~/token_file
 sudo rm -rf ~/token_file_2
-rm -rf calico-ipool.yaml
+# sudo rm -rf /home/ubuntu/worker.sh
+
+sudo rm -rf ~/calico-ipool.yaml
