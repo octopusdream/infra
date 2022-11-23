@@ -323,7 +323,7 @@ spec:
   storageClassName: ""
   resources:
     requests:
-      storage: 10Gi
+      storage: 5Gi
 ```
 pod.yaml
 
