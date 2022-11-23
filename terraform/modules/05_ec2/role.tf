@@ -24,7 +24,7 @@ resource "aws_iam_role_policy" "master_role" {
     name = "master-role-policy"
     role = aws_iam_role.master_role.id
     policy = <<EOF
-{ 
+{
     "Version": "2012-10-17",
     "Statement": [
         {
@@ -33,6 +33,18 @@ resource "aws_iam_role_policy" "master_role" {
                 "autoscaling:DescribeAutoScalingGroups",
                 "autoscaling:DescribeLaunchConfigurations",
                 "autoscaling:DescribeTags",
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeScalingActivities",
+                "autoscaling:SetDesiredCapacity",
+                "autoscaling:TerminateInstanceInAutoScalingGroup",
+                "elasticfilesystem:DescribeAccessPoints",
+                "elasticfilesystem:DescribeFileSystems",
+                "elasticfilesystem:DescribeMountTargets",
+                "ec2:DescribeAvailabilityZones",
+                "ec2:DescribeInstanceTypes",
+                "ec2:DescribeLaunchTemplateVersions",
+                "ec2:DescribeImages",
+                "ec2:GetInstanceTypesFromInstanceRequirements",
                 "ec2:DescribeInstances",
                 "ec2:DescribeRegions",
                 "ec2:DescribeRouteTables",
@@ -86,7 +98,31 @@ resource "aws_iam_role_policy" "master_role" {
                 "iam:CreateServiceLinkedRole",
                 "kms:DescribeKey"
             ],
-            "Resource": "*"
+            "Resource": [
+                "*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "elasticfilesystem:CreateAccessPoint"
+            ],
+            "Resource": "*",
+            "Condition": {
+                "StringLike": {
+                    "aws:RequestTag/efs.csi.aws.com/cluster": "true"
+                }
+            }
+        },
+        {
+            "Effect": "Allow",
+            "Action": "elasticfilesystem:DeleteAccessPoint",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:ResourceTag/efs.csi.aws.com/cluster": "true"
+                }
+            }
         }
     ]
 }
@@ -125,22 +161,48 @@ resource "aws_iam_role_policy" "worker_role" {
     role = aws_iam_role.worker_role.id
     policy = <<EOF
 {
-    "Version" : "2012-10-17",
-    "Statement" : [
+    "Version": "2012-10-17",
+    "Statement": [
         {
-        "Effect" : "Allow",
-        "Action" : [
-            "ec2:DescribeInstances",
-            "ec2:DescribeRegions",
-            "ecr:GetAuthorizationToken",
-            "ecr:BatchCheckLayerAvailability",
-            "ecr:GetDownloadUrlForLayer",
-            "ecr:GetRepositoryPolicy",
-            "ecr:DescribeRepositories",
-            "ecr:ListImages",
-            "ecr:BatchGetImage"
-        ],
-        "Resource": "*"
+            "Effect": "Allow",
+            "Action": [
+                "elasticfilesystem:DescribeAccessPoints",
+                "elasticfilesystem:DescribeFileSystems",
+                "elasticfilesystem:DescribeMountTargets",
+                "ec2:DescribeAvailabilityZones",
+                "ec2:DescribeInstances",
+                "ec2:DescribeRegions",
+                "ecr:GetAuthorizationToken",
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:GetRepositoryPolicy",
+                "ecr:DescribeRepositories",
+                "ecr:ListImages",
+                "ecr:BatchGetImage"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "elasticfilesystem:CreateAccessPoint"
+            ],
+            "Resource": "*",
+            "Condition": {
+                "StringLike": {
+                    "aws:RequestTag/efs.csi.aws.com/cluster": "true"
+                }
+            }
+        },
+        {
+            "Effect": "Allow",
+            "Action": "elasticfilesystem:DeleteAccessPoint",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:ResourceTag/efs.csi.aws.com/cluster": "true"
+                }
+            }
         }
     ]
 }

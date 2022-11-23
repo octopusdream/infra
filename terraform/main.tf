@@ -96,7 +96,7 @@ module "ec2" {
 module "auto_scaling" {
   source = "./modules/06_auto_scaling"
   alltag = var.alltag
-  aws_bastion_size = var.aws_master_size
+  aws_worker_size = var.aws_worker_size
   aws_ec2_ami = var.aws_ec2_ami
   sg_id = module.sg.sg_id
   private_a_subnet_id =  module.vpc.private_a_subnet_id
