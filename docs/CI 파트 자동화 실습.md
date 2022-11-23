@@ -370,7 +370,7 @@ nexus로 docker login 은 되었으나 docker image push 명령어 실행할때,
 
 대시보드에서 전에 앞에서 만든 item (ci_test01) 의 구성으로 가서 아래와 같은 설정을 추가한다.
 
-![image](https://user-images.githubusercontent.com/93571332/203455134-30d78780-741e-4fbb-9a2f-24eaaf0f0f04.png)
+![image](https://user-images.githubusercontent.com/93571332/203455478-a438df49-b64c-4cd0-92ab-8fc48ea453dd.png)
 
 ### Add Webhook
 
