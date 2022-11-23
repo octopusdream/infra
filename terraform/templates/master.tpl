@@ -261,9 +261,7 @@ worker6
 " >> /etc/ansible/hosts
 
 ##### delete ######
-# sudo rm -rf ~/.ssh/kakaokey
 sudo rm -rf ~/token_file
 sudo rm -rf ~/token_file_2
-# sudo rm -rf /home/ubuntu/worker.sh
-
+sudo rm -rf /home/ubuntu/worker.sh
 sudo rm -rf ~/calico-ipool.yaml
