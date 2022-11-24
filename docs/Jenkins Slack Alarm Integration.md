@@ -60,15 +60,15 @@ pipeline {
     environment {
         NEXUS_CREDS = credentials('nexus')
         JENKINS_IP = '3.37.129.159'
-        **SLACK_CHANNEL = '#jenkins'** # 슬랙 채널 설정
+        SLACK_CHANNEL = '#jenkins' # 슬랙 채널 설정
     }
     stages {
         # 파이프라인 시작 시 알림 발송
-        **stage('Start') {
+        stage('Start') {
             steps {
                 slackSend (channel: SLACK_CHANNEL, color: '#FFFF00', message: "STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
             }
-        }**
+        }
         stage('Clone Repo') {
             steps {
                 checkout scm
@@ -97,12 +97,12 @@ pipeline {
             sh 'docker logout ${Jenkins_IP}:5001'
         }
         # 파이프라인 종료 시 결과 알림 발송
-        **success {
+        success {
             slackSend (channel: SLACK_CHANNEL, color: '#00FF00', message: "SUCCESSFUL: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
         }
         failure {
             slackSend (channel: SLACK_CHANNEL, color: '#FF0000', message: "FAILED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})")
-        }**
+        }
     }
 }
 ```
