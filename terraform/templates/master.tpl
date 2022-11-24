@@ -151,7 +151,17 @@ sudo chown 0:0 /root/.kube/config
 export KUBECONFIG=/etc/kubernetes/admin.conf
 
 
-# ##### kubeadm join #####
+##### kubeadm join #####
+while :
+do
+  ip a
+  if [ $?==0 ]; then
+    break
+  else
+    sleep 1
+  fi
+done
+
 echo -n "#!" > /home/ubuntu/worker.sh
 sudo echo "/bin/bash
 
@@ -208,7 +218,6 @@ do
 done
 
 
-
 ###### AWS Controller Manager #####
 # kustomize 설치
 wget https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.5.6/kustomize_v4.5.6_linux_amd64.tar.gz
@@ -226,11 +235,12 @@ sudo kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
 ##### calicoctl #####
 # 현재 경로에 calicoctl binary 다운로드
 sudo curl -O -L  https://github.com/projectcalico/calicoctl/releases/download/v3.17.1/calicoctl
+
 # +x 모드 추가 
 sudo chmod +x calicoctl
+
 # 아무 경로에서 사용 가능하도록 PATH에 등록된 곳(ex: /usr/local/bin)으로 파일 이동
 sudo mv calicoctl /usr/local/bin
-#####################
 
 
 # ippool manifast 수정
@@ -263,5 +273,5 @@ worker6
 ##### delete ######
 sudo rm -rf ~/token_file
 sudo rm -rf ~/token_file_2
-sudo rm -rf /home/ubuntu/worker.sh
+# sudo rm -rf /home/ubuntu/worker.sh
 sudo rm -rf ~/calico-ipool.yaml

@@ -99,6 +99,10 @@ module "auto_scaling" {
   aws_worker_size = var.aws_worker_size
   aws_ec2_ami = var.aws_ec2_ami
   sg_id = module.sg.sg_id
+  master1_ip = module.ec2.master1_ip
+  efs_dns_name = module.efs.efs_dns_name
+  worker_profile = module.ec2.worker_profile
+  
   private_a_subnet_id =  module.vpc.private_a_subnet_id
   private_b_subnet_id =  module.vpc.private_b_subnet_id
   private_c_subnet_id =  module.vpc.private_c_subnet_id

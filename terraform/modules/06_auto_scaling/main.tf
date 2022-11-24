@@ -4,11 +4,15 @@ resource "aws_launch_configuration" "launch" {
   instance_type = var.aws_worker_size
   key_name = "kakaokey"
   security_groups = [var.sg_id]
+
+  iam_instance_profile = var.worker_profile
   ## ASG에서 시작 구성을 사용할때 필요한 옵션: 최신 리소스를 선 생성 후 기존 리소스를 삭제
   lifecycle	{
 		create_before_destroy	=	true
-    }
+  }
+  user_data = "${data.template_file.auto_scaling.rendered}"
 }
+
 
 # AWS AutoScaling Group 생성
 resource "aws_autoscaling_group" "atg" {
@@ -33,3 +37,12 @@ resource "aws_autoscaling_group" "atg" {
   )
 }
 
+data "template_file" "auto_scaling" {
+  template = "${file("./templates/auto_scaling.tpl")}"
+
+  vars = {
+    key_pem = file("./templates/key.pem")
+    efs_dns_name = var.efs_dns_name
+    master1_ip = var.master1_ip
+  }
+}

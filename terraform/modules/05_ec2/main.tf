@@ -56,7 +56,6 @@ resource "aws_instance" "master2" {
   associate_public_ip_address = false
   source_dest_check = false
 
-
   iam_instance_profile = aws_iam_instance_profile.master_profile.name
   tags = {
       Name = "${var.alltag}-master-b"
