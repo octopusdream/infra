@@ -168,15 +168,23 @@ resource "aws_eip" "ngw_pubc_ip" {
     depends_on              = [aws_internet_gateway.igw]
 }
 
-# # eip 생성 후 ec2 연결
-# resource "aws_eip" "bastion" {
-#     instance                = aws_instance.bastion.id
-#     vpc                     = true
-#     tags = {
-#         Name                = "${var.alltag}-bastion-eip"
-#     }
-#     depends_on              = [aws_instance.bastion]
-# }
+# eip 생성 후 nlb 연결
+resource "aws_eip" "nlb_ip1" {
+    vpc                     = true
+    tags = {
+        Name                = "${var.alltag}-nlb-eip"
+    }
+    depends_on              = [aws_internet_gateway.igw]
+}
+
+# eip 생성 후 master-nlb 연결
+resource "aws_eip" "nlb_ip2" {
+    vpc                     = true
+    tags = {
+        Name                = "${var.alltag}-master-nlb-eip"
+    }
+    depends_on              = [aws_internet_gateway.igw]
+}
 
 #################################
 # NAT 게이트웨이 생성

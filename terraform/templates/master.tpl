@@ -120,7 +120,7 @@ apiServer:
   timeoutForControlPlane: 4m0s
 certificatesDir: /etc/kubernetes/pki
 clusterName: jordy  # 태그에 지정할 클러스터 이름을 명시
-controlPlaneEndpoint: ""
+controlPlaneEndpoint: "" # 로드밸런서 서버와 6443 포트
 controllerManager:
   extraArgs:
     cloud-provider: aws  # cloud-provider 옵션 추가

@@ -109,6 +109,33 @@ module "auto_scaling" {
 }
 
 
+module "lb" {
+  source = "./modules/07_lb"
+  sg_id = module.sg.sg_id
+  depends_on = [module.ec2]
+
+  public_a_subnet_id =  module.vpc.public_a_subnet_id
+  public_b_subnet_id =  module.vpc.public_b_subnet_id
+  # public_c_subnet_id =  module.vpc.public_c_subnet_id
+  private_a_subnet_id =  module.vpc.private_a_subnet_id
+  private_b_subnet_id =  module.vpc.private_b_subnet_id
+  private_c_subnet_id =  module.vpc.private_c_subnet_id
+
+  vpc_id = module.vpc.vpc_id
+  nlb_ip1_id = module.vpc.nlb_ip1_id
+  nlb_ip2_id = module.vpc.nlb_ip2_id
+
+  master1_id = module.ec2.master1_id
+  master2_id = module.ec2.master2_id
+  master3_id = module.ec2.master3_id
+  worker1_id = module.ec2.worker1_id
+  worker2_id = module.ec2.worker2_id
+  worker3_id = module.ec2.worker3_id
+  worker4_id = module.ec2.worker4_id
+  worker5_id = module.ec2.worker5_id
+  worker6_id = module.ec2.worker6_id
+  jenkins_id = module.ec2.jenkins_id
+}
 
 # #backend "s3"는 사용할 backend가 s3임을 의미한다.
 # # --> terraform apply 후에 주석 해제하고 init 해주면 bucket에 .tfstate파일이 업데이트 된다.
