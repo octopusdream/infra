@@ -77,7 +77,7 @@ Ubuntu 20.04 에서 젠킨스를 설치 시 공식 문서 상의 설치 방법 �
 ### ****Set up the repository****
 
 ```bash
-# Update the apt package index and install packages to allow apt to use a repository over HTTPS:
+# Update the apt package index and install packages to allow apt to use a repository over HTTPS: 
 $ sudo apt-get update
 $ sudo apt-get install \
     ca-certificates \
