@@ -4,16 +4,47 @@ data:
     global:
       slack_api_url: https://hooks.slack.com/services/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
     receivers:
-    - name: slack-notifier
+    - name: k8s-monitoring
       slack_configs:
-      - channel: ['#monitoring-info', 'k8s-monitoring']
+      - channel: '#k8s-monitoring'
         send_resolved: true
         title: "Summary: {{ range .Alerts }}{{ .Annotations.summary }}\n{{ end }}"
         text: "Description: {{ range .Alerts }}{{ .Annotations.description }}\n{{ end }}"
-
+    - name: slack-info
+      slack_configs:
+      - api_url: https://hooks.slack.com/services/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
+        channel: '#monitoring-info'
+        send_resolved: true
+        title: "Summary: {{ range .Alerts }}{{ .Annotations.summary }}\n{{ end }}"
+        text: "Description: {{ range .Alerts }}{{ .Annotations.description }}\n{{ end }}"
+    - name: slack-warning
+      slack_configs:
+      - api_url: https://hooks.slack.com/services/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
+        channel: '#monitoring-warning'
+        send_resolved: true
+        title: "Summary: {{ range .Alerts }}{{ .Annotations.summary }}\n{{ end }}"
+        text: "Description: {{ range .Alerts }}{{ .Annotations.description }}\n{{ end }}"
+    - name: slack-error
+      slack_configs:
+      - api_url: https://hooks.slack.com/services/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
+        channel: '#monitoring-error'
+        send_resolved: true
+        title: "Summary: {{ range .Alerts }}{{ .Annotations.summary }}\n{{ end }}"
+        text: "Description: {{ range .Alerts }}{{ .Annotations.description }}\n{{ end }}"
     route:
       group_interval: 1m
       group_wait: 10s
-      receiver: slack-notifier
+      receiver: k8s-monitoring
       repeat_interval: 2m
+      routes:
+      - match:
+          severity: info
+          receiver: slack-info
+      - match:
+          severity: warning
+          receiver: slack-warning
+      - match:
+          severity: error
+          receiver: slack-error
+
   allow-snippet-annotations: "false"
