@@ -30,7 +30,7 @@ AWS 상에 EKS 자체가 쿠버네티스 master 노드 역할을 하는 듯 한�
 
 ![image](https://user-images.githubusercontent.com/93571332/204201004-26123753-a238-4ee2-a375-b45cd0f81415.png)
 
-(vscode 오른쪽 마우스 → 관리자 권한으로 실행)
+(vscode 오른쪽 마우스 → 관리자 권한으로 실행) 
 
 ![image](https://user-images.githubusercontent.com/93571332/204201024-f4b8b1da-4e60-44b8-baf1-5fe8b6a9ea2a.png)
 
