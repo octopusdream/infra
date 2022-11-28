@@ -1,0 +1,22 @@
+  alerting_rules.yml: |
+    groups:
+    - name: AllInstances
+      rules:
+      - alert: InstanceDown
+        annotations:
+          description: '{{ $labels.instance }} of job {{ $labels.job }} has been down
+            for more than 1 minutes.'
+          summary: Instance {{ $labels.instance }} down
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: warning
+      - alert: InstanceScaleOut
+        annotations:
+          description: 'Cluster has been scale out 1 node for more than 1 minutes.\n
+          Now, our nodes number is'
+          summary: Instance {{ $labels.instance }} scale out
+        expr: (sum(kube_node_info) > sum(kube_node_info offset 1m))
+        for: 1m
+        labels:
+          severity: info
