@@ -1,3 +1,29 @@
+# Issue: Node Exporter down
+
+<img width="1433" alt="image" src="https://user-images.githubusercontent.com/28949162/204507614-f9bf5145-9c56-4e89-8f6e-77bbc1cff6fb.png">
+
+인스턴스가 모두 작동중임에도 불구하고 node-exporter가 다운 되있다.
+
+<img width="840" alt="image" src="https://user-images.githubusercontent.com/28949162/204508168-7d8254ad-7447-47f5-b8e6-31300028ef60.png">
+
+pod status == Ready 상태이지만, 그라파나 대시보드에서 확인할 수 없고, 프로메테우스 서버에서 조회가 불가능하다. 마스터 node-exporter를 제외한 worker 노드들 전부 node-exporter가 정상 작동하지 않는다.
+
+```
+Events:
+  Type     Reason            Age   From               Message
+  ----     ------            ----  ----               -------
+  Warning  FailedScheduling  11s   default-scheduler  0/4 nodes are available: 1 node(s) didn't have free ports for the requested pod ports, 3 node(s) didn't match Pod's node affinity/selector.
+  Warning  FailedScheduling  10s   default-scheduler  0/4 nodes are available: 1 node(s) didn't have free ports for the requested pod ports, 3 node(s) didn't match Pod's node affinity/selector.
+  Normal   Scheduled         8s    default-scheduler  Successfully assigned default/prometheus-prometheus-node-exporter-544xt to ip-10-0-3-139.ap-northeast-2.compute.internal
+```
+
+Node exporter 를 제외한 나머지 컴포넌트는 제대로 작동한다 어떤게 문제일까?
+
+curl localhost:9100/metrics 를 각 노드에서 하면 결과 값 확인 가능한 상황
+
+1. SD
+2. 
+
 # grafana 비밀번호 오류
 
 helm re install 시
