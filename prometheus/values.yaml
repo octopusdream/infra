@@ -1578,51 +1578,51 @@ pushgateway:
 ##
 alertmanagerFiles:
   alertmanager.yml:
-  global:
-    slack_api_url: https://hooks.slack.com/services/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
-    receivers:
-    - name: k8s-monitoring
-      slack_configs:
-      - channel: '#k8s-monitoring'
-        send_resolved: true
-        title: "Summary: {{ range .Alerts }}{{ .Annotations.summary }}\n{{ end }}"
-        text: "Description: {{ range .Alerts }}{{ .Annotations.description }}\n{{ end }}"
-    - name: slack-info
-      slack_configs:
-      - api_url: https://hooks.slack.com/services/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
-        channel: '#monitoring-info'
-        send_resolved: true
-        title: "Summary: {{ range .Alerts }}{{ .Annotations.summary }}\n{{ end }}"
-        text: "Description: {{ range .Alerts }}{{ .Annotations.description }}\n{{ end }}"
-    - name: slack-warning
-      slack_configs:
-      - api_url: https://hooks.slack.com/services/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
-        channel: '#monitoring-warning'
-        send_resolved: true
-        title: "Summary: {{ range .Alerts }}{{ .Annotations.summary }}\n{{ end }}"
-        text: "Description: {{ range .Alerts }}{{ .Annotations.description }}\n{{ end }}"
-    - name: slack-error
-      slack_configs:
-      - api_url: https://hooks.slack.com/services/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
-        channel: '#monitoring-error'
-        send_resolved: true
-        title: "Summary: {{ range .Alerts }}{{ .Annotations.summary }}\n{{ end }}"
-        text: "Description: {{ range .Alerts }}{{ .Annotations.description }}\n{{ end }}"
-    route:
-      group_interval: 1m
-      group_wait: 10s
-      receiver: k8s-monitoring
-      repeat_interval: 2m
-      routes:
-      - match:
-          severity: info
-          receiver: slack-info
-      - match:
-          severity: warning
-          receiver: slack-warning
-      - match:
-          severity: error
-          receiver: slack-error## Prometheus server ConfigMap entries for rule files (allow prometheus labels interpolation)
+    global:
+      slack_api_url: https://hooks.slack.com/services/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
+      receivers:
+      - name: k8s-monitoring
+        slack_configs:
+        - channel: '#k8s-monitoring'
+          send_resolved: true
+          title: "Summary: {{ range .Alerts }}{{ .Annotations.summary }}\n{{ end }}"
+          text: "Description: {{ range .Alerts }}{{ .Annotations.description }}\n{{ end }}"
+      - name: slack-info
+        slack_configs:
+        - api_url: https://hooks.slack.com/services/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
+          channel: '#monitoring-info'
+          send_resolved: true
+          title: "Summary: {{ range .Alerts }}{{ .Annotations.summary }}\n{{ end }}"
+          text: "Description: {{ range .Alerts }}{{ .Annotations.description }}\n{{ end }}"
+      - name: slack-warning
+        slack_configs:
+        - api_url: https://hooks.slack.com/services/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
+          channel: '#monitoring-warning'
+          send_resolved: true
+          title: "Summary: {{ range .Alerts }}{{ .Annotations.summary }}\n{{ end }}"
+          text: "Description: {{ range .Alerts }}{{ .Annotations.description }}\n{{ end }}"
+      - name: slack-error
+        slack_configs:
+        - api_url: https://hooks.slack.com/services/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
+          channel: '#monitoring-error'
+          send_resolved: true
+          title: "Summary: {{ range .Alerts }}{{ .Annotations.summary }}\n{{ end }}"
+          text: "Description: {{ range .Alerts }}{{ .Annotations.description }}\n{{ end }}"
+      route:
+        group_interval: 1m
+        group_wait: 10s
+        receiver: k8s-monitoring
+        repeat_interval: 2m
+        routes:
+        - match:
+            severity: info
+            receiver: slack-info
+        - match:
+            severity: warning
+            receiver: slack-warning
+        - match:
+            severity: error
+            receiver: slack-error## Prometheus server ConfigMap entries for rule files (allow prometheus labels interpolation)
 ruleFiles: {}
 
 ## Prometheus server ConfigMap entries
