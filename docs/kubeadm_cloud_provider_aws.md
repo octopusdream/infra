@@ -175,7 +175,7 @@ ip-10-0-3-xxx.ap-northeast-2.compute.internal
       timeoutForControlPlane: 4m0s
     certificatesDir: /etc/kubernetes/pki
     clusterName: <cluster-name>  # 태그에 지정할 클러스터 이름을 명시
-    controlPlaneEndpoint: ""
+    controlPlaneEndpoint: "Endpoint:포트번호"  # HA 구성 시 <LB Endpoint:포트번호>
     controllerManager:
       extraArgs:
         cloud-provider: aws  # cloud-provider 옵션 추가
@@ -205,6 +205,12 @@ ip-10-0-3-xxx.ap-northeast-2.compute.internal
     $ kubeadm init --config control-plane.yaml
     ```
     
+    만약 HA를 구성한다면 다음 명령을 사용한다.
+    
+    ```bash
+    $ kubeadm init --config control-plane.yaml --upload-certs
+    ```
+    
 - HA를 위해 다수의 control plane을 이용
     
     ```yaml
@@ -217,13 +223,13 @@ ip-10-0-3-xxx.ap-northeast-2.compute.internal
         apiServerEndpoint: "cp-lb.us-west-2.elb.amazonaws.com:6443"  # 엔드포인트로 사용할 LB는 미리 생성
         caCertHashes: ["sha256:193feed98fb5fd2b4974..."]  # hash 값
     nodeRegistration:
-      name: ip-10-0-3-xxx.ap-northeast-2.compute.internal  # 등록할 control-plane hostname
+      name: ip-10-0-4-xxx.ap-northeast-2.compute.internal  # 등록할 control-plane hostname
       kubeletExtraArgs:
         cloud-provider: aws  # cloud-provider 옵션 추가
     controlPlane:
       localAPIEndpoint:
-        advertiseAddress: 10.0.3.xxx
-      certificateKey: "f6fcb672782d6f0581a106..."  # ~/.kube/config
+        advertiseAddress: 10.0.4.xxx
+      certificateKey: "f6fcb672782d6f0581a106..."  # kubeadm init 이후 출력된 certificate key
     ```
     
     아래와 같은 명령으로 configuration 파일을 적용한다.
@@ -241,7 +247,7 @@ ip-10-0-3-xxx.ap-northeast-2.compute.internal
     discovery:
       bootstrapToken:
         token: 123456.a4v4ii39rupz51j3 # token 값
-        apiServerEndpoint: "10.0.3.xxx:6443" # HA가 구축되지 않은 경우
+        apiServerEndpoint: "10.0.3.xxx:6443" # HA가 구축되지 않은 경우, HA가 구축된 경우 LB 엔드포인트 사용
         caCertHashes:
           - sha256:193feed98fb5fd2b4974... # hash 값
     nodeRegistration:
