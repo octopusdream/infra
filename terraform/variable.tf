@@ -1,14 +1,14 @@
 ################# company name ################
 variable "alltag" {
   description = "Company name을 입력하세요"
-  default     = "jung"
+  default     = "kakao"
 }
 
 ################## region #######################
 # region
 variable "region" {
   description = "region"  
-  default     = "ap-northeast-3"
+  default     = "ap-northeast-2"
 }
 
 

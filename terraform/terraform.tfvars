@@ -12,8 +12,8 @@ private_subnet_c_cidr_block = "10.0.5.0/24"
 ######## region
 # region = "ap-northeast-2"
 
-aws_ec2_ami = "ami-08c2ee02329b72f26"
-aws_ec2_ami_jenkins = "ami-08c2ee02329b72f26"
+aws_ec2_ami = "ami-0e9bfdb247cc8de84"
+aws_ec2_ami_jenkins = "ami-0e9bfdb247cc8de84"
 
 aws_bastion_size = "t3.micro"
 aws_bastion_num  = 3

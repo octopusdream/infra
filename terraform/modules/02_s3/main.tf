@@ -1,5 +1,5 @@
 resource "aws_dynamodb_table" "terraform_state_lock" {
- name= "TerraformStateLock"
+ name= "TerraformStateLock-seoul"
  hash_key = "LockID"
  billing_mode = "PAY_PER_REQUEST"
 
@@ -16,14 +16,14 @@ resource "aws_dynamodb_table" "terraform_state_lock" {
 
 
 resource "aws_s3_bucket" "state" {
-    bucket = "octopus-dream-terraform"
+    bucket = "octopus-dream-terraform-seoul"
     force_destroy = true # 강제 삭제
     # 상태파일의 버전 관리 활성화 : 코드 이력 관리
     versioning {
       enabled = true
     }
     tags = {
-      "Name" = "octopus-dream-terraform"
+      "Name" = "octopus-dream-terraform-seoul"
     }
     logging {
       target_bucket = "${aws_s3_bucket.logs.id}"
@@ -38,7 +38,7 @@ resource "aws_s3_bucket" "state" {
 
 // 로그 저장용 버킷
 resource "aws_s3_bucket" "logs" {
-  bucket = "terraform.logs"
+  bucket = "terraform.logs.seoul"
   acl    = "log-delivery-write"
 }
 

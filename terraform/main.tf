@@ -116,7 +116,6 @@ module "lb" {
 
   public_a_subnet_id =  module.vpc.public_a_subnet_id
   public_b_subnet_id =  module.vpc.public_b_subnet_id
-  # public_c_subnet_id =  module.vpc.public_c_subnet_id
   private_a_subnet_id =  module.vpc.private_a_subnet_id
   private_b_subnet_id =  module.vpc.private_b_subnet_id
   private_c_subnet_id =  module.vpc.private_c_subnet_id
@@ -125,9 +124,6 @@ module "lb" {
   nlb_ip1_id = module.vpc.nlb_ip1_id
   nlb_ip2_id = module.vpc.nlb_ip2_id
 
-  master1_id = module.ec2.master1_id
-  master2_id = module.ec2.master2_id
-  master3_id = module.ec2.master3_id
   worker1_id = module.ec2.worker1_id
   worker2_id = module.ec2.worker2_id
   worker3_id = module.ec2.worker3_id
