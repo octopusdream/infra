@@ -30,3 +30,7 @@ variable "efs_dns_name" {}
 # variable "c_mount" {}
 
 variable "sg_id" {}
+
+variable "master_nlb_dns_name" {}
+
+variable "bastion_volume_size" {}

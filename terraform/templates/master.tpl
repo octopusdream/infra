@@ -21,6 +21,16 @@ ${worker6_ip}  worker6
 
 
 sudo echo "
+Host master2
+	Hostname master2
+	IdentityFile ~/.ssh/kakaokey
+	User ubuntu
+
+Host master3
+	Hostname master3
+	IdentityFile ~/.ssh/kakaokey
+	User ubuntu
+
 Host worker1
 	Hostname worker1
 	IdentityFile ~/.ssh/kakaokey
@@ -120,7 +130,7 @@ apiServer:
   timeoutForControlPlane: 4m0s
 certificatesDir: /etc/kubernetes/pki
 clusterName: jordy  # 태그에 지정할 클러스터 이름을 명시
-controlPlaneEndpoint: "" # 로드밸런서 서버와 6443 포트
+controlPlaneEndpoint: \"${master_nlb_dns_name}:6443\" # 로드밸런서 서버와 6443 포트
 controllerManager:
   extraArgs:
     cloud-provider: aws  # cloud-provider 옵션 추가
@@ -142,7 +152,7 @@ kind: InitConfiguration
 nodeRegistration:
   kubeletExtraArgs:
     cloud-provider: aws  # cloud-provider 옵션 추가" > control-plane.yaml
-kubeadm init --config control-plane.yaml
+kubeadm init --config control-plane.yaml --upload-certs | grep certificate-key | grep control | cut -d ' ' -f 3 > /home/ubuntu/certificateKey 
 
 mkdir -p /root/.kube
 sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
@@ -150,8 +160,6 @@ sudo chown 0:0 /root/.kube/config
 
 export KUBECONFIG=/etc/kubernetes/admin.conf
 
-
-##### kubeadm join #####
 while :
 do
   ip a
@@ -162,6 +170,65 @@ do
   fi
 done
 
+while :
+do
+	if [ -z $(cat /home/ubuntu/certificateKey) ]; then
+		sleep 1
+	else
+		break
+	fi
+done
+
+
+##### kubeadm master join #####
+echo -n "#!" > /home/ubuntu/master.sh
+sudo echo "/bin/bash
+
+# master.yaml
+sudo echo \"apiVersion: kubeadm.k8s.io/v1beta2
+kind: JoinConfiguration
+discovery:
+  bootstrapToken:
+    token: $(sudo kubeadm token list | grep bootstrappers | cut -d ' ' -f 1) # token 값
+    apiServerEndpoint: \\\"${master_nlb_dns_name}:6443\\\"  # 엔드포인트로 사용할 LB는 미리 생성
+    caCertHashes: [\\\"sha256:$(openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //')\\\"]  # hash 값
+nodeRegistration:
+  name: \$(curl -s http://169.254.169.254/latest/meta-data/local-hostname)  # 등록할 control-plane hostname
+  kubeletExtraArgs:
+    cloud-provider: aws  # cloud-provider 옵션 추가
+controlPlane:
+  localAPIEndpoint:
+    advertiseAddress: \$(ip a | grep '10.0.' | cut -d ' ' -f 6 | cut -d '/' -f 1)
+  certificateKey: \\\"$(cat /home/ubuntu/certificateKey)\\\"\" > /home/ubuntu/master.yaml
+
+sudo kubeadm join --config /home/ubuntu/master.yaml
+
+mkdir -p /root/.kube
+sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
+sudo chown 0:0 /root/.kube/config
+
+export KUBECONFIG=/etc/kubernetes/admin.conf" >> /home/ubuntu/master.sh
+
+File=/home/ubuntu/master.sh
+while :
+do
+  if [ -f "$File" ]; then
+  	sudo scp /home/ubuntu/master.sh ubuntu@master2:/home/ubuntu/master.sh
+	sleep 1
+	sudo scp /home/ubuntu/master.sh ubuntu@master3:/home/ubuntu/master.sh
+	sleep 1
+	sudo ssh ubuntu@master2 "sh /home/ubuntu/master.sh"
+	sleep 1
+	sudo ssh ubuntu@master3 "sh /home/ubuntu/master.sh"
+	sleep 1
+    break
+  else
+    sleep 1
+  fi
+done
+
+
+##### kubeadm worker join #####
 echo -n "#!" > /home/ubuntu/worker.sh
 sudo echo "/bin/bash
 
@@ -170,22 +237,24 @@ sudo echo \"apiVersion: kubeadm.k8s.io/v1beta2
 kind: JoinConfiguration
 discovery:
   bootstrapToken:
-    token: $(sudo kubeadm token list | cut -d ' ' -f 1 | sed '1d') # token 값
-    apiServerEndpoint: \\\"$(ip a | grep '10.0.3.' | cut -d ' ' -f 6 | cut -d '/' -f 1):6443\\\" # HA가 구축되지 않은 경우
-    caCertHashes:
-      - sha256:$(openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //') # hash 값
+    token: $(sudo kubeadm token list | grep bootstrappers | cut -d ' ' -f 1) # token 값
+    apiServerEndpoint: \\\"${master_nlb_dns_name}:6443\\\"
+    caCertHashes: [\\\"sha256:$(openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //')\\\"]  # hash 값
 nodeRegistration:
-  name: ip-10-0-\$(ip a | grep '10.0.' | cut -d ' ' -f 6 | cut -d '/' -f 1 | cut -d '.' -f 3)-\$(ip a | grep '10.0.' | cut -d ' ' -f 6 | cut -d '/' -f 1 | cut -d '.' -f 4).ap-northeast-3.compute.internal # worker hostname
+  name: \$(curl -s http://169.254.169.254/latest/meta-data/local-hostname) # worker hostname
   kubeletExtraArgs:
-    cloud-provider: aws  # cloud-provider 옵션 추가\" > worker.yaml
+    cloud-provider: aws  # cloud-provider 옵션 추가\" > /home/ubuntu/worker.yaml
 
-sudo kubeadm join --config worker.yaml
-" >> /home/ubuntu/worker.sh
+sudo kubeadm join --config /home/ubuntu/worker.yaml" >> /home/ubuntu/worker.sh
 
 File=/home/ubuntu/worker.sh
 while :
 do
   if [ -f "$File" ]; then
+    sudo scp /home/ubuntu/worker.sh ubuntu@master2:/home/ubuntu/worker.sh
+	sleep 1
+	sudo scp /home/ubuntu/worker.sh ubuntu@master3:/home/ubuntu/worker.sh
+	sleep 1
   	sudo scp /home/ubuntu/worker.sh ubuntu@worker1:/home/ubuntu/worker.sh
 	sleep 1
 	sudo scp /home/ubuntu/worker.sh ubuntu@worker2:/home/ubuntu/worker.sh
@@ -199,17 +268,17 @@ do
 	sudo scp /home/ubuntu/worker.sh ubuntu@worker6:/home/ubuntu/worker.sh
 	sleep 1
 
-	sudo ssh ubuntu@worker1 "sh worker.sh"
+	sudo ssh ubuntu@worker1 "sh /home/ubuntu/worker.sh"
 	sleep 1
-	sudo ssh ubuntu@worker2 "sh worker.sh"
+	sudo ssh ubuntu@worker2 "sh /home/ubuntu/worker.sh"
 	sleep 1
-	sudo ssh ubuntu@worker3 "sh worker.sh"
+	sudo ssh ubuntu@worker3 "sh /home/ubuntu/worker.sh"
 	sleep 1
-	sudo ssh ubuntu@worker4 "sh worker.sh"
+	sudo ssh ubuntu@worker4 "sh /home/ubuntu/worker.sh"
 	sleep 1
-	sudo ssh ubuntu@worker5 "sh worker.sh"
+	sudo ssh ubuntu@worker5 "sh /home/ubuntu/worker.sh"
 	sleep 1
-	sudo ssh ubuntu@worker6 "sh worker.sh"
+	sudo ssh ubuntu@worker6 "sh /home/ubuntu/worker.sh"
 	sleep 1
     break
   else
@@ -259,7 +328,7 @@ nodeSelector: all()
 vxlanMode: Never" > ~/calico-ipool.yaml
 sudo calicoctl apply -f ~/calico-ipool.yaml
 
-##### ansible #####
+#### ansible #####
 sudo apt install -y ansible
 sudo mkdir /etc/ansible
 echo "worker1

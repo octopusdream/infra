@@ -1,6 +1,6 @@
 # 역할 생성 및 정책 연결 코드
-resource "aws_iam_role" "master_role" {
-  name = "master_role"
+resource "aws_iam_role" "master_role_seoul" {
+  name = "master_role_2_seoul"
 
   assume_role_policy = <<EOF
 {
@@ -20,9 +20,9 @@ EOF
 }
 
 
-resource "aws_iam_role_policy" "master_role" {
-    name = "master-role-policy"
-    role = aws_iam_role.master_role.id
+resource "aws_iam_role_policy" "master_role_seoul" {
+    name = "master-role-policy-2_seoul"
+    role = aws_iam_role.master_role_seoul.id
     policy = <<EOF
 {
     "Version": "2012-10-17",
@@ -129,15 +129,15 @@ resource "aws_iam_role_policy" "master_role" {
 EOF
 }
 
-resource "aws_iam_instance_profile" "master_profile" {
-    name = "${var.alltag}-master"
-    role = aws_iam_role.master_role.name
+resource "aws_iam_instance_profile" "master_profile_seoul" {
+    name = "${var.alltag}-master-2_seoul"
+    role = aws_iam_role.master_role_seoul.name
 }
 
 # 역할 생성 및 정책 연결 코드
 
-resource "aws_iam_role" "worker_role" {
-  name = "worker_role"
+resource "aws_iam_role" "worker_role_seoul" {
+  name = "worker_role_2_seoul"
   assume_role_policy = <<EOF
 {
     "Version": "2012-10-17",
@@ -156,9 +156,9 @@ EOF
 }
 
 
-resource "aws_iam_role_policy" "worker_role" {
-    name = "worker-role-policy"
-    role = aws_iam_role.worker_role.id
+resource "aws_iam_role_policy" "worker_role_seoul" {
+    name = "worker-role-policy-2_seoul"
+    role = aws_iam_role.worker_role_seoul.id
     policy = <<EOF
 {
     "Version": "2012-10-17",
@@ -210,7 +210,7 @@ EOF
 }
 
 
-resource "aws_iam_instance_profile" "worker_profile" {
-    name = "${var.alltag}-worker"
-    role = aws_iam_role.worker_role.name
+resource "aws_iam_instance_profile" "worker_profile_seoul" {
+    name = "${var.alltag}-worker-2_seoul"
+    role = aws_iam_role.worker_role_seoul.name
 }

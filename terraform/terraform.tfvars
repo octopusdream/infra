@@ -10,7 +10,7 @@ private_subnet_c_cidr_block = "10.0.5.0/24"
 
 
 ######## region
-# region = "ap-northeast-2"
+# region = "ap-northeast-3"
 
 aws_ec2_ami = "ami-0e9bfdb247cc8de84"
 aws_ec2_ami_jenkins = "ami-0e9bfdb247cc8de84"
@@ -25,3 +25,5 @@ aws_worker_size = "t3.medium"
 aws_worker_num  = 2
 
 aws_jenkins_size = "t3.small"
+
+bastion_volume_size = 30

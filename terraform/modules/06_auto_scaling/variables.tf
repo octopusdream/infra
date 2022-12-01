@@ -12,4 +12,8 @@ variable "sg_id" {}
 variable "efs_dns_name" {}
 
 variable "master1_ip" {}
+variable "master2_ip" {}
+variable "master3_ip" {}
+
 variable "worker_profile" {}
+variable "master_nlb_dns_name" {}

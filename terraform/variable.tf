@@ -1,7 +1,7 @@
 ################# company name ################
 variable "alltag" {
   description = "Company name을 입력하세요"
-  default     = "kakao"
+  default     = "jordy"
 }
 
 ################## region #######################
@@ -61,3 +61,7 @@ variable "aws_jenkins_size" {
 # variable "a_mount" {}
 # variable "b_mount" {}
 # variable "c_mount" {}
+
+variable "bastion_volume_size" { 
+  description = "volume_size"
+}

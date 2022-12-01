@@ -2,6 +2,7 @@ variable "sg_id" {}
 
 variable "public_a_subnet_id" {}
 variable "public_b_subnet_id" {}
+# variable "public_c_subnet_id" {}
 variable "private_a_subnet_id" {} 
 variable "private_b_subnet_id" {}    
 variable "private_c_subnet_id" {}
@@ -9,6 +10,10 @@ variable "private_c_subnet_id" {}
 # vpc name
 variable "vpc_id" {}
 
+
+# variable "master1_ip" {}
+# variable "master2_ip" {}
+# variable "master3_ip" {}
 variable "worker1_id" {}
 variable "worker2_id" {}
 variable "worker3_id" {}

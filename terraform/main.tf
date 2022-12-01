@@ -32,11 +32,11 @@ module "vpc" {
   AZ_c = "${var.region}c"
 }
 
-module "s3" {
-  source              = "./modules/02_s3"
-  alltag              = var.alltag
+# module "s3" {
+#   source              = "./modules/02_s3"
+#   alltag              = var.alltag
 
-}
+# }
 
 module "sg" {
   source = "./modules/03_sg"
@@ -70,12 +70,13 @@ module "ec2" {
   aws_master_size = var.aws_master_size
   aws_worker_num = var.aws_worker_num
   aws_worker_size = var.aws_worker_size
-  
+  bastion_volume_size = var.bastion_volume_size
   aws_ec2_ami = var.aws_ec2_ami
   aws_ec2_ami_jenkins = var.aws_ec2_ami_jenkins
   sg_id = module.sg.sg_id
   
   efs_dns_name = module.efs.efs_dns_name
+  master_nlb_dns_name = module.lb.master_nlb_dns_name
 
   # a_mount = var.aws_efs_mount_target.a_mount.id
   # b_mount = var.aws_efs_mount_target.b_mount.id
@@ -99,9 +100,14 @@ module "auto_scaling" {
   aws_worker_size = var.aws_worker_size
   aws_ec2_ami = var.aws_ec2_ami
   sg_id = module.sg.sg_id
+  
   master1_ip = module.ec2.master1_ip
+  master2_ip = module.ec2.master2_ip
+  master3_ip = module.ec2.master3_ip
+
   efs_dns_name = module.efs.efs_dns_name
   worker_profile = module.ec2.worker_profile
+  master_nlb_dns_name = module.lb.master_nlb_dns_name
   
   private_a_subnet_id =  module.vpc.private_a_subnet_id
   private_b_subnet_id =  module.vpc.private_b_subnet_id
@@ -112,10 +118,11 @@ module "auto_scaling" {
 module "lb" {
   source = "./modules/07_lb"
   sg_id = module.sg.sg_id
-  depends_on = [module.ec2]
+  # depends_on = [module.ec2]
 
   public_a_subnet_id =  module.vpc.public_a_subnet_id
   public_b_subnet_id =  module.vpc.public_b_subnet_id
+  # public_c_subnet_id =  module.vpc.public_c_subnet_id
   private_a_subnet_id =  module.vpc.private_a_subnet_id
   private_b_subnet_id =  module.vpc.private_b_subnet_id
   private_c_subnet_id =  module.vpc.private_c_subnet_id
@@ -123,6 +130,10 @@ module "lb" {
   vpc_id = module.vpc.vpc_id
   nlb_ip1_id = module.vpc.nlb_ip1_id
   nlb_ip2_id = module.vpc.nlb_ip2_id
+
+  # master1_ip = module.ec2.master1_ip
+  # master2_ip = module.ec2.master2_ip
+  # master3_ip = module.ec2.master3_ip
 
   worker1_id = module.ec2.worker1_id
   worker2_id = module.ec2.worker2_id

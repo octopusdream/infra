@@ -7,12 +7,18 @@ sudo su
 sudo echo "alias vi='vim'" >> ~/.bashrc
 sudo source ~/.bashrc
 
+sudo apt-get -y install nfs-common
+sudo service nfs start
+sudo service nfs-server start
+
 sudo su -
 sudo mkdir /efs
 sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport ${efs_dns_name}:/ /efs
 df -h
 touch /efs/kakao
-ls /efs
+# ls /efs
+sudo echo "${efs_dns_name}:/    /efs    nfs4    _netdev,tls     0   0" >> /etc/fstab
+
 
 # sudo hostnamectl set-hostname master
 

@@ -87,31 +87,6 @@ kustomize build 'github.com/kubernetes/cloud-provider-aws/examples/existing-clus
 #### ansible #####
 sudo apt install -y ansible
 
-# id_rsa
-sudo ssh-keygen -q -f ~/.ssh/id_rsa -N ""
-sudo chmod 600 ~/.ssh/id_rsa
-sudo echo "sudo echo \"$(cat ~/.ssh/id_rsa.pub)\" > ~/.ssh/authorized_keys" > ~/token_file
-
-sudo cat ~/token_file | ssh -i ~/.ssh/id_rsa ubuntu@worker1
-sleep 1
-sudo cat ~/token_file | ssh -i ~/.ssh/id_rsa ubuntu@worker2
-sleep 1
-sudo cat ~/token_file | ssh -i ~/.ssh/id_rsa ubuntu@worker3
-sleep 1
-sudo cat ~/token_file | ssh -i ~/.ssh/id_rsa ubuntu@worker4
-sleep 1
-sudo cat ~/token_file | ssh -i ~/.ssh/id_rsa ubuntu@worker5
-sleep 1
-sudo cat ~/token_file | ssh -i ~/.ssh/id_rsa ubuntu@worker6
-sleep 1
-
-ssh-keyscan worker1 >> ~/.ssh/known_hosts
-ssh-keyscan worker2 >> ~/.ssh/known_hosts
-ssh-keyscan worker3 >> ~/.ssh/known_hosts
-ssh-keyscan worker4 >> ~/.ssh/known_hosts
-ssh-keyscan worker5 >> ~/.ssh/known_hosts
-ssh-keyscan worker6 >> ~/.ssh/known_hosts
-
 sudo mkdir /etc/ansible
 echo "worker1
 worker2
