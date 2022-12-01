@@ -5,9 +5,9 @@
 2. AWS ELB란
 3. AWS ELB - NLB란
 4. AWS ELB - ALB란
-5. ALB, NLB 
+5. ALB, NLB 요금 정책
 ```
-
+   
 ---
 ### Load Balancer
 
