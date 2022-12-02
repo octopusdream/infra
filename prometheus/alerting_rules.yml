@@ -5,18 +5,41 @@
       - alert: InstanceDown
         annotations:
           description: '{{ $labels.instance }} of job {{ $labels.job }} has been down
-            for more than 1 minutes.'
+            for more than 1 minute.'
           summary: Instance {{ $labels.instance }} down
         expr: up == 0
         for: 1m
         labels:
-          severity: warning
+          severity: "info"
       - alert: InstanceScaleOut
         annotations:
-          description: 'Cluster has been scale out 1 node for more than 1 minutes.\n
-          Now, our nodes number is'
+          description: Cluster has been scale out 1 node for more than 10 seconds.
           summary: Instance {{ $labels.instance }} scale out
         expr: (sum(kube_node_info) > sum(kube_node_info offset 1m))
+        for: 10s
+        labels:
+          severity: "info"
+      - alert: ZoneA
+        annotations:
+          description: 'Zone A has only one node. Perhaps zone a has no worker nodes.'
+          summary: {{ $labels.topology_kubernetes_io_region }} needs check
+        expr: sum(up{topology_kubernetes_io_zone=~"ap-northeast-3a"} and up{job="kubernetes-nodes"}) < 3
         for: 1m
         labels:
-          severity: info
+          severity: "warning"
+      - alert: ZoneB
+        annotations:
+          description: 'Zone B has only one node. Perhaps zone b has no worker nodes.'
+          summary: {{ $labels.topology_kubernetes_io_region }} needs check
+        expr: sum(up{topology_kubernetes_io_zone=~"ap-northeast-3b"} and up{job="kubernetes-nodes"}) == 1
+        for: 1m
+        labels:
+          severity: "warning"
+      - alert: ZoneC
+        annotations:
+          description: 'Zone C has only one node. Perhaps zone a has no worker nodes.'
+          summary: {{ $labels.topology_kubernetes_io_region }} needs check
+        expr: sum(up{topology_kubernetes_io_zone=~"ap-northeast-3c"} and up{job="kubernetes-nodes"}) == 1
+        for: 1m
+        labels:
+          severity: "warning"
