@@ -48,3 +48,30 @@ data:
           receiver: slack-error
 
   allow-snippet-annotations: "false"
+  
+---
+
+apiVersion: v1
+data:
+  alertmanager.yml: "global:\n  slack_api_url: https://hooks.slack.com/services/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\nreceivers:\n-
+    name: k8s-monitoring\n  slack_configs:\n  - channel: '#k8s-monitoring'\n    send_resolved:
+    true\n    text: |-\n      Description: {{ range .Alerts }}{{ .Annotations.description
+    }}\n      {{ end }}\n    title: |-\n      Summary: {{ range .Alerts }}{{ .Annotations.summary
+    }}\n      {{ end }}\n- name: slack-info\n  slack_configs:\n  - api_url: https://hooks.slack.com/services/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\n
+    \   channel: '#monitoring-info'\n    send_resolved: true\n    text: |-\n      Description:
+    {{ range .Alerts }}{{ .Annotations.description }}\n      {{ end }}\n    title:
+    |-\n      Summary: {{ range .Alerts }}{{ .Annotations.summary }}\n      {{ end
+    }}\n- name: slack-warning\n  slack_configs:\n  - api_url: https://hooks.slack.com/services/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\n
+    \   channel: '#monitoring-warning'\n    send_resolved: true\n    text: |-\n      Description:
+    {{ range .Alerts }}{{ .Annotations.description }}\n      {{ end }}\n    title:
+    |-\n      Summary: {{ range .Alerts }}{{ .Annotations.summary }}\n      {{ end
+    }}\n- name: slack-error\n  slack_configs:\n  - api_url: https://hooks.slack.com/services/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\n
+    \   channel: '#monitoring-error'\n    send_resolved: true\n    text: |-\n      Description:
+    {{ range .Alerts }}{{ .Annotations.description }}\n      {{ end }}\n    title:
+    |-\n      Summary: {{ range .Alerts }}{{ .Annotations.summary }}\n      {{ end
+    }}\nroute:\n  receiver: k8s-monitoring\n  group_interval: 1m\n  group_wait: 10s\n
+    \ repeat_interval: 2m\n  routes:\n  - receiver: slack-info\n    matchers:\n    -
+    severity = \"info\"\n  - receiver: slack-warning \n    matchers:\n    - severity
+    = \"page\"\n  - receiver: slack-error\n    matchers:\n    - severity = \"critical\"\n"
+  allow-snippet-annotations: "false"
+
