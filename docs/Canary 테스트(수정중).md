@@ -289,3 +289,9 @@ NAME                                   KIND        STATUS        AGE    INFO
 [https://www.infracloud.io/blogs/progressive-delivery-argo-rollouts-canary-deployment/](https://www.infracloud.io/blogs/progressive-delivery-argo-rollouts-canary-deployment/)
 
 [Basic Usage - Argo Rollouts - Kubernetes Progressive Delivery Controller (argoproj.github.io)](https://argoproj.github.io/argo-rollouts/getting-started/)
+
+[https://argoproj.github.io/argo-rollouts/features/specification/](https://argoproj.github.io/argo-rollouts/features/specification/)
+
+[https://codefresh.io/blog/argo-rollouts-1-0-milestone/](https://codefresh.io/blog/argo-rollouts-1-0-milestone/)
+
+[https://techblog.zozo.com/entry/argo-rollouts-canary-release#Argo-Rollouts導入前のリリースの問題](https://techblog.zozo.com/entry/argo-rollouts-canary-release#Argo-Rollouts%E5%B0%8E%E5%85%A5%E5%89%8D%E3%81%AE%E3%83%AA%E3%83%AA%E3%83%BC%E3%82%B9%E3%81%AE%E5%95%8F%E9%A1%8C)
