@@ -295,3 +295,29 @@ NAME                                   KIND        STATUS        AGE    INFO
 [https://codefresh.io/blog/argo-rollouts-1-0-milestone/](https://codefresh.io/blog/argo-rollouts-1-0-milestone/)
 
 [https://techblog.zozo.com/entry/argo-rollouts-canary-release#Argo-Rollouts導入前のリリースの問題](https://techblog.zozo.com/entry/argo-rollouts-canary-release#Argo-Rollouts%E5%B0%8E%E5%85%A5%E5%89%8D%E3%81%AE%E3%83%AA%E3%83%AA%E3%83%BC%E3%82%B9%E3%81%AE%E5%95%8F%E9%A1%8C)
+
+### 참고 배포 전략 장단점
+
+[Blue-Green Deployment]
+Simple, fast, easy to implement
+Rollback is easier in case of issues
+Short downtime
+No need to deploy older version (it's already up!)
+More expensive that basic deployment
+
+[Canary Deployment]
+Safest of all deployment strategies
+Canary gets tested with real live traffic
+Rollback is easier in case of issues
+Short downtime
+Implementation is complex, may require scripting
+Utilize services that provides managed canary(e.g.API-Gateway, ECS etc.)
+Slower than Basic and Blue-Green
+
+[Rolling Deployment]
+Out of the box implementation
+EC2 AMI upgrade, Kubernetes default deployment
+Rollback is easier in case of issues
+Short downtime
+Implementation is complex, may require scripting
+Utilize services that provides managed rolling deployment (e.g. KUBERNETES)
