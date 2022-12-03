@@ -45,29 +45,38 @@
           severity: "warning"
 ---
 
-apiVersion: v1
-data:
   alerting_rules.yml: "groups:\n- name: AllInstances\n  rules:\n  - alert: ComponentDown\n
     \   annotations:\n      description: '{{ $labels.instance }} of job {{ $labels.job
-    }} has been down\n        for more than 1 minute.'\n      summary: Job {{ $labels.job
-    }} down\n    expr: up == 0\n    for: 1m\n    labels:\n      severity: \"info\"\n
+    }} has been down for more than 1 minute.'\n      summary: Job {{ $labels.job }}
+    down\n    expr: up == 0\n    for: 1m\n    labels:\n      severity: \"info\"\n
     \ - alert: InstanceScaleOut\n    annotations:\n      description: Cluster has
-    been scale out 1 node for more than 10 seconds.\n      summary: Instance {{ $labels.instance
-    }} scale out\n    expr: (sum(kube_node_info) > sum(kube_node_info offset 1m))\n
-    \   for: 10s\n    labels:\n      severity: \"info\"\n  - alert: ZoneA\n    annotations:\n
-    \     description: Zone A has only 1 node. Perhaps zone A has no worker nodes.\n
-    \     summary: needs check\n    expr: sum(up{topology_kubernetes_io_zone=~\"ap-northeast-3a\"}
-    and up{job=\"kubernetes-nodes\"}) == 1    \n    for: 1m\n    labels:\n      severity:
-    \"page\"\n  - alert: ZoneB\n    annotations:\n      description: Zone B has only
-    1 node. Perhaps zone b has no worker nodes.\n      summary: needs check\n    expr:
-    sum(up{topology_kubernetes_io_zone=~\"ap-northeast-3b\"} and up{job=\"kubernetes-nodes\"})
-    == 1    \n    for: 1m\n    labels:\n      severity: \"page\"\n  - alert: ZoneC\n
+    \ been scale out 1 node for more than 10 seconds.\n      summary: Instance {{
+    $labels.instance }} scale out\n    expr: (sum(kube_node_info) > sum(kube_node_info
+    offset 1m))\n    for: 10s\n    labels:\n      severity: \"info\"\n  - alert: DangerZoneA\n
+    \   annotations:\n      description: Zone A has only 1 node. Perhaps zone A has
+    no worker nodes.\n      summary: needs check\n    expr: sum(up{topology_kubernetes_io_zone=~\"ap-northeast-3a\"}
+    and up{job=\"kubernetes-nodes\"}) < 2    \n    for: 1m\n    labels:\n      severity:
+    \"page\"\n  - alert: DangerZoneB\n    annotations:\n      description: Zone B
+    has only 1 node. Perhaps zone b has no worker nodes.\n      summary: needs check\n
+    \   expr: sum(up{topology_kubernetes_io_zone=~\"ap-northeast-3b\"} and up{job=\"kubernetes-nodes\"})
+    < 2    \n    for: 1m\n    labels:\n      severity: \"page\"\n  - alert: DangerZoneC\n
     \   annotations:\n      description: Zone C has only 1 node. Perhaps zone b has
     no worker nodes.\n      summary: needs check\n    expr: sum(up{topology_kubernetes_io_zone=~\"ap-northeast-3c\"}
-    and up{job=\"kubernetes-nodes\"}) == 1    \n    for: 1m\n    labels:\n      severity:
+    and up{job=\"kubernetes-nodes\"}) < 2    \n    for: 1m\n    labels:\n      severity:
     \"page\"\n  - alert: MasterDown\n    annotations:\n      description: Master node
     down.\n      summary: needs check\n    expr: sum(up{key=\"master\"} and up{job=\"kubernetes-nodes\"})
-    < 3    \n    for: 1m\n    labels:\n      severity: \"critical\"\n  - alert: NodeBusy\n
-    \   annotations:\n      description: Many Instance scale out.\n      summary:
-    3 nodes scale out\n    expr: sum(up{job=\"kubernetes-nodes\"}) > 11    \n    for:
-    1m\n    labels:\n      severity: \"info\"\n"
+    < 3    \n    for: 1m\n    labels:\n      severity: \"critical\"\n  - alert: ManyInstanceScaleOut\n
+    \   annotations:\n      description: Instance Scaled Out \n      summary: AutoScaler
+    capacity exceeds 50%\n    expr: sum(up{job=\"kubernetes-nodes\"})  - sum(up{key=\"master\"})
+    > (12 * 0.1)       \n    for: 1m\n    labels:\n      severity: \"info\"\n  - alert:
+    MaxInstanceScaleOut\n    annotations:\n      description: You should increase
+    the maximum scale out value or check the part where the problems occurred.  \n
+    \     summary: AutoScaler capacity reached 100% \n    expr: sum(up{job=\"kubernetes-nodes\"})  - sum(up{key=\"master\"}) > (12 - 1)       \n    for: 30s\n    labels:\n      severity: \"page\"\n  - alert: NodeNotReady\n
+    \   annotations:\n      description: Node {{ $labels.node }} has been unready
+    for a long time\n      summary: Kubernetes Node ready {{ $labels.instance }}\n
+    \   expr: kube_node_status_condition{condition=\"Ready\",status=\"true\"} == 0\n
+    \   for: 3m\n    labels:\n      severity: \"info\"\n  - alert: PodCrashLoopBackOff\n
+    \   annotations:\n      description: 'Pod {{ $labels.pod }} is crash looping VALUE
+    = {{ $value }} LABELS = {{ $labels }}'\n      summary: Kubernetes pod crash looping
+    (instance {{ $labels.instance }})\n    expr: increase(kube_pod_container_status_restarts_total[1m])
+    > 3\n    for: 2m\n    labels:\n      severity: \"info\"\n"
