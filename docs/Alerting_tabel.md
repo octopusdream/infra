@@ -9,8 +9,9 @@
 |Error|ScaleOutLimitations|신속한 서비스 레이턴시 증가 해결|AutoScalingGroup 의 생성 가능 노드 수 한계치 도달, 서비스 애플리케이션 Peding 상태 시 알람|
 
 
+Detail Descriptions in Appendix
 HTTP Request 로 알람
-
-
 Pod Scheduler
 
+ScaleOutLimitations: Node Join 후 Ready 상태까지 30초 정도 소요
+For 시간 기준 명확히
