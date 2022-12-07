@@ -97,17 +97,20 @@ module "ec2" {
 module "auto_scaling" {
   source = "./modules/06_auto_scaling"
   alltag = var.alltag
+  aws_master_size = var.aws_master_size
   aws_worker_size = var.aws_worker_size
   aws_ec2_ami = var.aws_ec2_ami
   sg_id = module.sg.sg_id
-  
-  master1_ip = module.ec2.master1_ip
-  master2_ip = module.ec2.master2_ip
-  master3_ip = module.ec2.master3_ip
 
-  efs_dns_name = module.efs.efs_dns_name
+  worker1_ip = module.ec2.worker1_ip
+  worker2_ip = module.ec2.worker2_ip
+  worker3_ip = module.ec2.worker3_ip
+  worker4_ip = module.ec2.worker4_ip
+  worker5_ip = module.ec2.worker5_ip
+  worker6_ip = module.ec2.worker6_ip
+
+  master_profile = module.ec2.master_profile
   worker_profile = module.ec2.worker_profile
-  master_nlb_dns_name = module.lb.master_nlb_dns_name
   
   private_a_subnet_id =  module.vpc.private_a_subnet_id
   private_b_subnet_id =  module.vpc.private_b_subnet_id

@@ -252,8 +252,6 @@ data "template_file" "master" {
   vars = {
     key_pem = file("./templates/key.pem")
     master_nlb_dns_name = var.master_nlb_dns_name
-    master2_ip = aws_instance.master2.private_ip
-    master3_ip = aws_instance.master3.private_ip
     worker1_ip = aws_instance.worker1[0].private_ip
     worker2_ip = aws_instance.worker1[1].private_ip
     worker3_ip = aws_instance.worker2[0].private_ip
@@ -285,3 +283,4 @@ data "template_file" "worker" {
     efs_dns_name = var.efs_dns_name
   }
 }
+

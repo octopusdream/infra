@@ -19,9 +19,6 @@ touch /efs/kakao
 # ls /efs
 sudo echo "${efs_dns_name}:/    /efs    nfs4    _netdev,tls     0   0" >> /etc/fstab
 
-
-# sudo hostnamectl set-hostname master
-
 # 방화벽 종료
 sudo systemctl stop ufw && systemctl disable ufw
 
@@ -43,7 +40,6 @@ echo "\n" | sudo add-apt-repository "deb [arch=amd64] https://download.docker.co
 
 # 3. docker-ce 버전 설치
 sudo apt-get install -y docker-ce=5:20.10.17~3-0~ubuntu-$(lsb_release -cs)
-
 
 ##### kubeadm, kubelet 및 kubectl #####
 # 1. 쿠버네티스를 설치를 위한 GPG 키 다운로드

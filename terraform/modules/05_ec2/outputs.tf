@@ -1,26 +1,30 @@
 output "worker_profile" {
   value = aws_iam_instance_profile.worker_profile_seoul.name
 }
-
-output "master1_ip" {
-  value = aws_instance.master1.private_ip
-}
-output "master2_ip" {
-  value = aws_instance.master2.private_ip
-}
-output "master3_ip" {
-  value = aws_instance.master3.private_ip
+output "master_profile" {
+  value = aws_iam_instance_profile.master_profile_seoul.name
 }
 
-# output "master1_id" {
-#   value = aws_instance.master1.id
-# }
-# output "master2_id" {
-#   value = aws_instance.master2.id
-# }
-# output "master3_id" {
-#   value = aws_instance.master3.id
-# }
+output "worker1_ip" {
+  value = aws_instance.worker1[0].private_ip
+}
+output "worker2_ip" {
+  value = aws_instance.worker1[1].private_ip
+}
+output "worker3_ip" {
+  value = aws_instance.worker2[0].private_ip
+}
+output "worker4_ip" {
+  value = aws_instance.worker2[1].private_ip
+}
+output "worker5_ip" {
+  value = aws_instance.worker3[0].private_ip
+}
+output "worker6_ip" {
+  value = aws_instance.worker3[1].private_ip
+}
+
+
 output "worker1_id" {
   value = aws_instance.worker1[0].id
 }

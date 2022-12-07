@@ -9,12 +9,10 @@ sudo source ~/.bashrc
 
 sudo su -
 sudo mkdir /efs
-sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport ${efs_dns_name}:/ /efs
+sudo mount -t nfs4 -o nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport fs-0f6b2f5b9a24e90d1.efs.ap-northeast-3.amazonaws.com:/ /efs
 df -h
 touch /efs/kakao
-# ls /efs
-sudo echo "${efs_dns_name}:/    /efs    nfs4    _netdev,tls     0   0" >> /etc/fstab
-
+ls /efs
 
 # 방화벽 종료
 sudo systemctl stop ufw && systemctl disable ufw
@@ -57,9 +55,10 @@ sudo apt-get install -y kubelet=1.21.1-00 kubeadm=1.21.1-00 kubectl=1.21.1-00
 # 5. 업그레이드로 인한 버전업 방지
 sudo apt-mark hold docker-ce kubelet kubeadm kubectl
 
-sudo echo "${master1_ip}  master1
-${master2_ip}  master2
-${master3_ip}  master3
+# ssh 연결
+sudo echo "10.0.3.100  master1
+10.0.4.100  master2
+10.0.5.100  master3
 " >> /etc/hosts
 
 sudo echo "Host master1
@@ -78,38 +77,13 @@ sudo echo "Host master1
 	User ubuntu
 " >> ~/.ssh/config
 
-sudo touch  ~/.ssh/kakaokey
+touch ~/.ssh/kakaokey
 echo "${key_pem}" > ~/.ssh/kakaokey
-sudo chmod 600 ~/.ssh/kakaokey
+chmod 600 ~/.ssh/kakaokey
 
 ssh-keyscan master1 >> ~/.ssh/known_hosts
 ssh-keyscan master2 >> ~/.ssh/known_hosts
 ssh-keyscan master3 >> ~/.ssh/known_hosts
-
-sudo scp ubuntu@master1:/home/ubuntu/worker.sh /home/ubuntu/worker.shubuntu
-# if [ -f /home/worker.sh]
-# sudo scp ubuntu@master1:/home/ubuntu/worker.sh /home/ubuntu/worker.sh
-# sudo scp ubuntu@master1:/home/ubuntu/worker.sh /home/ubuntu/worker.sh
-
-# echo -n "#!" > /home/ubuntu/worker.sh
-# sudo echo "/bin/bash
-
-# # worker.yaml
-# sudo echo \"apiVersion: kubeadm.k8s.io/v1beta2
-# kind: JoinConfiguration
-# discovery:
-#   bootstrapToken:
-#     token: $(ssh master1 "sudo kubeadm token list | grep bootstrappers | cut -d ' ' -f 1") # token 값
-#     apiServerEndpoint: \"${master_nlb_dns_name}:6443\"
-#     caCertHashes: [\"sha256:$(ssh $MASTER "openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'")\"]  # hash 값
-# nodeRegistration:
-#   name: \$(curl -s http://169.254.169.254/latest/meta-data/local-hostname) # worker hostname
-#   kubeletExtraArgs:
-#     cloud-provider: aws  # cloud-provider 옵션 추가\" > /home/ubuntu/worker.yaml
-
-# sudo kubeadm join --config /home/ubuntu/worker.yaml" >> /home/ubuntu/worker.sh
-
-
 
 while :
 do
@@ -121,13 +95,47 @@ do
   fi
 done
 
+
+# health check
+# 살아있는 master에서 파일 가져와서 실행
+rm -rf /home/ubuntu/worker.sh
+
+echo > /dev/tcp/master1/6443
+if [ $? -eq 1 ]; then
+  echo > /dev/tcp/master2/644
+  if [ $? -eq 1 ]; then
+		if [ -z $(ssh master3 "sudo kubeadm token list | grep bootstrappers | cut -d ' ' -f 1 | tail -1") ]; then
+			sudo ssh master3 "sudo kubeadm token create"
+		fi
+   		sudo scp ubuntu@master3:/home/ubuntu/worker.sh /home/ubuntu/worker.sh
+		sleep 1
+		sed -i 's/master1/master3/g' /home/ubuntu/worker.sh
+  else
+		if [ -z $(ssh master2 "sudo kubeadm token list | grep bootstrappers | cut -d ' ' -f 1 | tail -1") ]; then
+			sudo ssh master2 "sudo kubeadm token create"
+		fi
+    	sudo scp ubuntu@master2:/home/ubuntu/worker.sh /home/ubuntu/worker.sh
+		sleep 1
+		sed -i 's/master1/master2/g' /home/ubuntu/worker.sh
+  fi
+else
+	if [ -z $(ssh master1 "sudo kubeadm token list | grep bootstrappers | cut -d ' ' -f 1 | tail -1") ]; then
+		sudo ssh master1 "sudo kubeadm token create"
+	fi
+  	sudo scp ubuntu@master1:/home/ubuntu/worker.sh /home/ubuntu/worker.sh
+	sleep 1
+fi
+
 File=/home/ubuntu/worker.sh
 while :
 do
-  if [ -f "$File" ]; then
-    sudo sh /home/ubuntu/worker.sh
-    break
-  else
-    sleep 1
-  fi
+if [ -f "$File" ]; then
+	bash /home/ubuntu/worker.sh
+	break
+else
+	sleep 1
+fi
 done
+
+sed -i 's/master2/master1/g' /home/ubuntu/master.sh
+sed -i 's/master3/master1/g' /home/ubuntu/master.sh

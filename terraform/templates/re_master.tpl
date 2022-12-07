@@ -9,6 +9,9 @@ alias vi='vim'" >> ~/.bashrc
 sudo source ~/.bashrc
 
 sudo echo "
+10.0.3.100  master1
+10.0.4.100  master2
+10.0.5.100  master3
 ${worker1_ip}  worker1
 ${worker2_ip}  worker2
 ${worker3_ip}  worker3
@@ -18,6 +21,21 @@ ${worker6_ip}  worker6
 " >> /etc/hosts
 
 sudo echo "
+Host master1
+	Hostname master1
+	IdentityFile ~/.ssh/kakaokey
+	User ubuntu
+
+Host master2
+	Hostname master2
+	IdentityFile ~/.ssh/kakaokey
+	User ubuntu
+
+Host master3
+	Hostname master3
+	IdentityFile ~/.ssh/kakaokey
+	User ubuntu
+
 Host worker1
 	Hostname worker1
 	IdentityFile ~/.ssh/kakaokey
@@ -53,12 +71,16 @@ sudo touch  ~/.ssh/kakaokey
 echo "${key_pem}" > ~/.ssh/kakaokey
 sudo chmod 600 ~/.ssh/kakaokey
 
+ssh-keyscan master1 >> ~/.ssh/known_hosts
+ssh-keyscan master2 >> ~/.ssh/known_hosts
+ssh-keyscan master3 >> ~/.ssh/known_hosts
 ssh-keyscan worker1 >> ~/.ssh/known_hosts
 ssh-keyscan worker2 >> ~/.ssh/known_hosts
 ssh-keyscan worker3 >> ~/.ssh/known_hosts
 ssh-keyscan worker4 >> ~/.ssh/known_hosts
 ssh-keyscan worker5 >> ~/.ssh/known_hosts
 ssh-keyscan worker6 >> ~/.ssh/known_hosts
+
 
 
 # 방화벽 종료
@@ -102,6 +124,72 @@ sudo apt-get install -y kubelet=1.21.1-00 kubeadm=1.21.1-00 kubectl=1.21.1-00
 
 # 5. 업그레이드로 인한 버전업 방지
 sudo apt-mark hold docker-ce kubelet kubeadm kubectl
+
+
+while :
+do
+  ip a
+  if [ $?==0 ]; then
+    break
+  else
+    sleep 1
+  fi
+done
+
+
+# health check
+# 살아있는 master에서 파일 가져와서 실행
+echo > /dev/tcp/master1/6443
+if [ $? -eq 1 ]; then
+  echo > /dev/tcp/master2/6443
+  if [ $? -eq 1 ]; then
+		if [ -z $(ssh master3 "sudo kubeadm token list | grep bootstrappers | cut -d ' ' -f 1 | tail -1") ]; then
+			sudo ssh master3 "sudo kubeadm token create"
+		fi
+    	sudo scp ubuntu@master3:/home/ubuntu/master.sh /home/ubuntu/master.sh
+		sleep 1
+		sudo scp ubuntu@master3:/home/ubuntu/worker.sh /home/ubuntu/worker.sh
+		sleep 1
+		sed -i 's/master1/master3/g' /home/ubuntu/master.sh
+  elif [ $(ip a | grep 10.0. | cut -d ' ' -f6 | cut -d '/' -f1 | cut -d '.' -f 3) -ne 4 ]; then
+		if [ -z $(ssh master2 "sudo kubeadm token list | grep bootstrappers | cut -d ' ' -f 1 | tail -1") ]; then
+			sudo ssh master2 "sudo kubeadm token create"
+		fi
+    	sudo scp ubuntu@master2:/home/ubuntu/master.sh /home/ubuntu/master.sh
+		sleep 1
+		sudo scp ubuntu@master2:/home/ubuntu/worker.sh /home/ubuntu/worker.sh
+		sleep 1
+		sed -i 's/master1/master2/g' /home/ubuntu/master.sh
+  fi
+elif [ $(ip a | grep 10.0. | cut -d ' ' -f6 | cut -d '/' -f1 | cut -d '.' -f 3) -ne 3 ]; then
+	if [ -z $(ssh master1 "sudo kubeadm token list | grep bootstrappers | cut -d ' ' -f 1 | tail -1") ]; then
+		sudo ssh master1 "sudo kubeadm token create"
+	fi
+  	sudo scp ubuntu@master1:/home/ubuntu/master.sh /home/ubuntu/master.sh
+	sleep 1
+	sudo scp ubuntu@master1:/home/ubuntu/worker.sh /home/ubuntu/worker.sh
+	sleep 1
+fi
+
+File=/home/ubuntu/master.sh
+while :
+do
+if [ -f "$File" ]; then
+	bash /home/ubuntu/master.sh
+	break
+else
+	sleep 1
+fi
+done
+
+sed -i 's/master2/master1/g' /home/ubuntu/master.sh
+sed -i 's/master3/master1/g' /home/ubuntu/master.sh
+
+mkdir -p /root/.kube
+sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
+sudo chown 0:0 /root/.kube/config
+export KUBECONFIG=/etc/kubernetes/admin.conf
+
 
 ###### AWS Controller Manager #####
 # kustomize 설치
