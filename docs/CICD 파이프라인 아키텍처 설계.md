@@ -14,3 +14,6 @@ Github, Jenkins, Dockerhub, Helm 을 사용하여 CI 를 파트를 구현하고,
 
 ## 3차 수정 아키텍처
 ![image](https://user-images.githubusercontent.com/93571332/203459208-3b5542d3-caf2-4226-8e26-1db498865cef.png)
+
+## 4차 수정 아키텍처
+![image](https://user-images.githubusercontent.com/93571332/206104699-3d97fa5d-23ee-43e2-94ad-b6dc21240a9a.png)
