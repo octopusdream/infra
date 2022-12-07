@@ -275,3 +275,4 @@ NAME                                   KIND        STATUS        AGE    INFO
 [https://argoproj.github.io/argo-rollouts/features/specification/](https://argoproj.github.io/argo-rollouts/features/specification/)
 
 [https://codefresh.io/blog/argo-rollouts-1-0-milestone/](https://codefresh.io/blog/argo-rollouts-1-0-milestone/)
+
