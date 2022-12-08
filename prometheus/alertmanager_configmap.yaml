@@ -11,6 +11,9 @@ Annotations:  meta.helm.sh/release-name: prometheus
 
 Data
 ====
+allow-snippet-annotations:
+----
+false
 alertmanager.yml:
 ----
 global:
@@ -28,18 +31,29 @@ receivers:
       {{ end }}
 - name: slack-info
   slack_configs:
-  - api_url: https://hooks.slack.com/services/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
+  - api_url: https://hooks.slack.com/services/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
     channel: '#monitoring-info'
     send_resolved: true
     text: |-
-      Description: {{ range .Alerts }}{{ .Annotations.description }}'
+      Description: {{ range .Alerts }}{{ .Annotations.description }}
+      {{ end }}
+    title: |-
+      Summary: {{ range .Alerts }}{{ .Annotations.summary }}
+      {{ end }}
+- name: slack-info-once
+  slack_configs:
+  - api_url: https://hooks.slack.com/services/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
+    channel: '#monitoring-info'
+    send_resolved: true
+    text: |-
+      Description: {{ range .Alerts }}{{ .Annotations.description }}
       {{ end }}
     title: |-
       Summary: {{ range .Alerts }}{{ .Annotations.summary }}
       {{ end }}
 - name: slack-warning
   slack_configs:
-  - api_url: https://hooks.slack.com/services/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
+  - api_url: https://hooks.slack.com/services/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
     channel: '#monitoring-warning'
     send_resolved: true
     text: |-
@@ -50,7 +64,7 @@ receivers:
       {{ end }}
 - name: slack-error
   slack_configs:
-  - api_url: https://hooks.slack.com/services/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
+  - api_url: https://hooks.slack.com/services/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
     channel: '#monitoring-error'
     send_resolved: true
     text: |-
@@ -61,7 +75,7 @@ receivers:
       {{ end }}
 route:
   receiver: k8s-monitoring
-  group_interval: 1m
+  group_interval: 30s
   group_wait: 10s
   repeat_interval: 2m
   routes:
@@ -74,8 +88,9 @@ route:
   - receiver: slack-error
     matchers:
     - severity = "critical"
+  - receiver: slack-info-once
+    repeat_interval: 30m
+    matchers:
+    - severity = "info"
 
-allow-snippet-annotations:
-----
-false
 Events:  <none>
