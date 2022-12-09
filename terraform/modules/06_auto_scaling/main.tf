@@ -44,7 +44,7 @@ resource "aws_launch_configuration" "master_launch" {
 #   max_size = 1
   
 #   tags = concat(
-#     [
+#     [  
 #       {
 #         "key" = "Name"
 #         "value" = "terraform-${var.alltag}-master-asg"
@@ -62,7 +62,7 @@ resource "aws_launch_configuration" "master_launch" {
 # resource "aws_autoscaling_group" "master_atg3" {
 #   launch_configuration = aws_launch_configuration.master_launch.name
 #   vpc_zone_identifier = ["${var.private_c_subnet_id}"]
-#   min_size = 0
+#   min_size = 1
 #   max_size = 1
   
 #   tags = concat(

@@ -120,7 +120,7 @@ sudo apt-mark hold docker-ce kubelet kubeadm kubectl
 
 
 ##### kubeadm init ###
-cat << EOF > control-plane.yaml
+cat << EOF > /home/ubuntu/control-plane.yaml
 # control-plane.yaml
 apiVersion: kubeadm.k8s.io/v1beta2
 kind: ClusterConfiguration
@@ -155,9 +155,9 @@ nodeRegistration:
     cloud-provider: aws  # cloud-provider 옵션 추가
 EOF
 
-kubeadm init --config control-plane.yaml --upload-certs | grep certificate-key | grep control | cut -d ' ' -f 3 > /home/ubuntu/certificateKey 
+kubeadm init --config /home/ubuntu/control-plane.yaml --upload-certs | grep certificate-key | grep control | cut -d ' ' -f 3 > /home/ubuntu/certificateKey
 
-mkdir -p /root/.kube
+sudo mkdir -p /root/.kube
 sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
 sudo chown 0:0 /root/.kube/config
 
@@ -175,11 +175,11 @@ done
 
 while :
 do
-	if [ -z $(cat /home/ubuntu/certificateKey) ]; then
-		sleep 1
-	else
-		break
-	fi
+  if [ -z $(cat /home/ubuntu/certificateKey) ]; then
+    sleep 1
+  else
+    break
+  fi
 done
 
 
@@ -206,7 +206,7 @@ controlPlane:
 
 sudo kubeadm join --config /home/ubuntu/master.yaml
 
-mkdir -p /root/.kube
+sudo mkdir -p /root/.kube
 sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
 sudo chown 0:0 /root/.kube/config
 EOF
@@ -215,9 +215,13 @@ File=/home/ubuntu/master.sh
 while :
 do
   if [ -f "$File" ]; then
-  	sudo scp /home/ubuntu/master.sh ubuntu@master2:/home/ubuntu/master.sh
+    sudo scp /home/ubuntu/master.sh ubuntu@master2:/home/ubuntu/master.sh
     sleep 1
     sudo scp /home/ubuntu/master.sh ubuntu@master3:/home/ubuntu/master.sh
+    sleep 1
+    sudo scp /home/ubuntu/control-plane.yaml ubuntu@master2:/home/ubuntu/control-plane.yaml
+    sleep 1
+    sudo scp /home/ubuntu/control-plane.yaml ubuntu@master3:/home/ubuntu/control-plane.yaml
     sleep 1
     sudo ssh ubuntu@master2 "bash /home/ubuntu/master.sh"
     sleep 1
@@ -259,7 +263,7 @@ do
     sleep 1
     sudo scp /home/ubuntu/worker.sh ubuntu@master3:/home/ubuntu/worker.sh
     sleep 1
-  	sudo scp /home/ubuntu/worker.sh ubuntu@worker1:/home/ubuntu/worker.sh
+    sudo scp /home/ubuntu/worker.sh ubuntu@worker1:/home/ubuntu/worker.sh
     sleep 1
     sudo scp /home/ubuntu/worker.sh ubuntu@worker2:/home/ubuntu/worker.sh
     sleep 1
@@ -271,7 +275,7 @@ do
     sleep 1
     sudo scp /home/ubuntu/worker.sh ubuntu@worker6:/home/ubuntu/worker.sh
     sleep 1
-
+        
     sudo ssh ubuntu@worker1 "bash /home/ubuntu/worker.sh"
     sleep 1
     sudo ssh ubuntu@worker2 "bash /home/ubuntu/worker.sh"
@@ -309,7 +313,7 @@ sudo kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
 # 현재 경로에 calicoctl binary 다운로드
 sudo curl -O -L  https://github.com/projectcalico/calicoctl/releases/download/v3.17.1/calicoctl
 
-# +x 모드 추가 
+# +x 모드 추가
 sudo chmod +x calicoctl
 
 # 아무 경로에서 사용 가능하도록 PATH에 등록된 곳(ex: /usr/local/bin)으로 파일 이동
@@ -344,10 +348,8 @@ worker6
 " >> /etc/ansible/hosts
 
 ##### delete ######
-sudo rm -rf ~/token_file
 sudo rm -rf /home/ubuntu/master.sh
 sudo rm -rf /home/ubuntu/worker.sh
-sudo rm -rf ~/token_file_2
 sudo rm -rf /home/ubuntu/certificateKey
 sudo rm -rf ~/calico-ipool.yaml
 
@@ -360,7 +362,7 @@ sudo ssh master1 "sudo kubeadm init phase upload-certs --upload-certs --config /
 
 while :
 do
-  if [ -z $(cat /home/ubuntu/cert-key) ]; then
+  if [ -z \$(cat /home/ubuntu/cert-key) ]; then
     sleep 1
   else
     break
@@ -382,9 +384,20 @@ nodeRegistration:
 controlPlane:
   localAPIEndpoint:
     advertiseAddress: \$(ip a | grep '10.0.' | cut -d ' ' -f 6 | cut -d '/' -f 1 | tail -1)
-  certificateKey: \"\$(sudo ssh master1 "sudo kubeadm init phase upload-certs --upload-certs --config control-plane.yaml | tail -1")\"" > /home/ubuntu/master.yaml
+  certificateKey: \"\$(cat /home/ubuntu/cert-key)\"" > /home/ubuntu/master.yaml
 
-sudo kubeadm join --config /home/ubuntu/master.yaml
+File=/home/ubuntu/master.yaml
+while :
+do
+  if [ -f "\$File" ]; then
+    sudo kubeadm join --config /home/ubuntu/master.yaml
+    sleep 1
+    rm -rf cert-key
+    break
+  else
+    sleep 1
+  fi
+done
 
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
@@ -395,7 +408,7 @@ File=/home/ubuntu/master.sh
 while :
 do
   if [ -f "$File" ]; then
-  	sudo scp /home/ubuntu/master.sh ubuntu@master2:/home/ubuntu/master.sh
+    sudo scp /home/ubuntu/master.sh ubuntu@master2:/home/ubuntu/master.sh
     sleep 1
     sudo scp /home/ubuntu/master.sh ubuntu@master3:/home/ubuntu/master.sh
     sleep 1
@@ -432,7 +445,7 @@ File=/home/ubuntu/worker.sh
 while :
 do
   if [ -f "$File" ]; then
-  	sudo scp /home/ubuntu/worker.sh ubuntu@master2:/home/ubuntu/worker.sh
+    sudo scp /home/ubuntu/worker.sh ubuntu@master2:/home/ubuntu/worker.sh
     sleep 1
     sudo scp /home/ubuntu/worker.sh ubuntu@master3:/home/ubuntu/worker.sh
     sleep 1

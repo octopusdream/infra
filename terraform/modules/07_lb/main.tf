@@ -98,7 +98,6 @@ resource "aws_lb_listener" "http1" {
 }
 
 
-
 #### nlb #####
 resource "aws_lb" "master-nlb" {
   name               = "master-nlb"

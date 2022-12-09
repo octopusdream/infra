@@ -104,38 +104,39 @@ echo > /dev/tcp/master1/6443
 if [ $? -eq 1 ]; then
   echo > /dev/tcp/master2/644
   if [ $? -eq 1 ]; then
-		if [ -z $(ssh master3 "sudo kubeadm token list | grep bootstrappers | cut -d ' ' -f 1 | tail -1") ]; then
-			sudo ssh master3 "sudo kubeadm token create"
-		fi
-   		sudo scp ubuntu@master3:/home/ubuntu/worker.sh /home/ubuntu/worker.sh
-		sleep 1
-		sed -i 's/master1/master3/g' /home/ubuntu/worker.sh
+    if [ -z $(ssh master3 "sudo kubeadm token list | grep bootstrappers | cut -d ' ' -f 1 | tail -1") ]; then
+      sudo ssh master3 "sudo kubeadm token create"
+    fi
+    sudo scp ubuntu@master3:/home/ubuntu/worker.sh /home/ubuntu/worker.sh
+    sleep 1
+    sed -i 's/master1/master3/g' /home/ubuntu/worker.sh
   else
-		if [ -z $(ssh master2 "sudo kubeadm token list | grep bootstrappers | cut -d ' ' -f 1 | tail -1") ]; then
-			sudo ssh master2 "sudo kubeadm token create"
-		fi
-    	sudo scp ubuntu@master2:/home/ubuntu/worker.sh /home/ubuntu/worker.sh
-		sleep 1
-		sed -i 's/master1/master2/g' /home/ubuntu/worker.sh
+    if [ -z $(ssh master2 "sudo kubeadm token list | grep bootstrappers | cut -d ' ' -f 1 | tail -1") ]; then
+      sudo ssh master2 "sudo kubeadm token create"
+    fi
+    sudo scp ubuntu@master2:/home/ubuntu/worker.sh /home/ubuntu/worker.sh
+    sleep 1
+    sed -i 's/master1/master2/g' /home/ubuntu/worker.sh
   fi
 else
-	if [ -z $(ssh master1 "sudo kubeadm token list | grep bootstrappers | cut -d ' ' -f 1 | tail -1") ]; then
-		sudo ssh master1 "sudo kubeadm token create"
-	fi
-  	sudo scp ubuntu@master1:/home/ubuntu/worker.sh /home/ubuntu/worker.sh
-	sleep 1
+  if [ -z $(ssh master1 "sudo kubeadm token list | grep bootstrappers | cut -d ' ' -f 1 | tail -1") ]; then
+    sudo ssh master1 "sudo kubeadm token create"
+  fi
+  sudo scp ubuntu@master1:/home/ubuntu/worker.sh /home/ubuntu/worker.sh
+  sleep 1
 fi
 
 File=/home/ubuntu/worker.sh
 while :
 do
-if [ -f "$File" ]; then
-	bash /home/ubuntu/worker.sh
-	break
-else
-	sleep 1
-fi
+  if [ -f "$File" ]; then
+    bash /home/ubuntu/worker.sh
+    break
+  else
+    sleep 1
+  fi
 done
 
 sed -i 's/master2/master1/g' /home/ubuntu/master.sh
 sed -i 's/master3/master1/g' /home/ubuntu/master.sh
+

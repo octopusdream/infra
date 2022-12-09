@@ -143,49 +143,89 @@ echo > /dev/tcp/master1/6443
 if [ $? -eq 1 ]; then
   echo > /dev/tcp/master2/6443
   if [ $? -eq 1 ]; then
-		if [ -z $(ssh master3 "sudo kubeadm token list | grep bootstrappers | cut -d ' ' -f 1 | tail -1") ]; then
-			sudo ssh master3 "sudo kubeadm token create"
-		fi
-    	sudo scp ubuntu@master3:/home/ubuntu/master.sh /home/ubuntu/master.sh
-		sleep 1
-		sudo scp ubuntu@master3:/home/ubuntu/worker.sh /home/ubuntu/worker.sh
-		sleep 1
-		sed -i 's/master1/master3/g' /home/ubuntu/master.sh
+    if [ -z $(ssh master3 "sudo kubeadm token list | grep bootstrappers | cut -d ' ' -f 1 | tail -1") ]; then
+      sudo ssh master3 "sudo kubeadm token create"
+    fi
+    MASTER="master3"
+    sudo scp ubuntu@master3:/home/ubuntu/master.sh /home/ubuntu/master.sh
+    sleep 1
+    sudo scp ubuntu@master3:/home/ubuntu/worker.sh /home/ubuntu/worker.sh
+    sleep 1
+    sudo scp ubuntu@master3:/home/ubuntu/control-plane.yaml /home/ubuntu/control-plane.yaml
+    sleep 1
+    sed -i 's/master1/master3/g' /home/ubuntu/master.sh
   elif [ $(ip a | grep 10.0. | cut -d ' ' -f6 | cut -d '/' -f1 | cut -d '.' -f 3) -ne 4 ]; then
-		if [ -z $(ssh master2 "sudo kubeadm token list | grep bootstrappers | cut -d ' ' -f 1 | tail -1") ]; then
-			sudo ssh master2 "sudo kubeadm token create"
-		fi
-    	sudo scp ubuntu@master2:/home/ubuntu/master.sh /home/ubuntu/master.sh
-		sleep 1
-		sudo scp ubuntu@master2:/home/ubuntu/worker.sh /home/ubuntu/worker.sh
-		sleep 1
-		sed -i 's/master1/master2/g' /home/ubuntu/master.sh
+    if [ -z $(ssh master2 "sudo kubeadm token list | grep bootstrappers | cut -d ' ' -f 1 | tail -1") ]; then
+      sudo ssh master2 "sudo kubeadm token create"
+    fi
+    MASTER="master2"
+    sudo scp ubuntu@master2:/home/ubuntu/master.sh /home/ubuntu/master.sh
+    sleep 1
+    sudo scp ubuntu@master2:/home/ubuntu/worker.sh /home/ubuntu/worker.sh
+    sleep 1
+    sudo scp ubuntu@master2:/home/ubuntu/control-plane.yaml /home/ubuntu/control-plane.yaml
+    sleep 1
+    sed -i 's/master1/master2/g' /home/ubuntu/master.sh
   fi
 elif [ $(ip a | grep 10.0. | cut -d ' ' -f6 | cut -d '/' -f1 | cut -d '.' -f 3) -ne 3 ]; then
-	if [ -z $(ssh master1 "sudo kubeadm token list | grep bootstrappers | cut -d ' ' -f 1 | tail -1") ]; then
-		sudo ssh master1 "sudo kubeadm token create"
-	fi
-  	sudo scp ubuntu@master1:/home/ubuntu/master.sh /home/ubuntu/master.sh
-	sleep 1
-	sudo scp ubuntu@master1:/home/ubuntu/worker.sh /home/ubuntu/worker.sh
-	sleep 1
+  if [ -z $(ssh master1 "sudo kubeadm token list | grep bootstrappers | cut -d ' ' -f 1 | tail -1") ]; then
+    sudo ssh master1 "sudo kubeadm token create"
+  fi
+  MASTER="master1"
+  sudo scp ubuntu@master1:/home/ubuntu/master.sh /home/ubuntu/master.sh
+  sleep 1
+  sudo scp ubuntu@master1:/home/ubuntu/worker.sh /home/ubuntu/worker.sh
+  sleep 1
+  sudo scp ubuntu@master1:/home/ubuntu/control-plane.yaml /home/ubuntu/control-plane.yaml
+  sleep 1
 fi
+
+APISERVER="etcd-$(ssh $MASTER "hostname")"
+NEW_HOSTNAME=$(hostname)
+ssh $MASTER "sudo kubectl -n kube-system exec $APISERVER -- sh -c \"ETCDCTL_API=3 etcdctl member list --cacert /etc/kubernetes/pki/etcd/ca.crt --key /etc/kubernetes/pki/etcd/server.key --cert /etc/kubernetes/pki/etcd/server.crt\" | grep $NEW_HOSTNAME | cut -d ',' -f 1" > /home/ubuntu/etcd-id
+
+File=/home/ubuntu/etcd-id
+while :
+do
+  if [ -f "$File" ]; then
+    ETCD_ID=$(cat /home/ubuntu/etcd-id)
+    ssh $MASTER "sudo kubectl -n kube-system exec $APISERVER -- sh -c \"ETCDCTL_API=3 etcdctl member remove $ETCD_ID --cacert /etc/kubernetes/pki/etcd/ca.crt --key /etc/kubernetes/pki/etcd/server.key --cert /etc/kubernetes/pki/etcd/server.crt\"" > /home/ubuntu/check
+    break
+  else
+    sleep 1
+  fi
+done
+
+File=/home/ubuntu/check
+while :
+do
+  if [ -f "$File" ]; then
+    break
+  else
+    sleep 1
+  fi
+done
 
 File=/home/ubuntu/master.sh
 while :
 do
-if [ -f "$File" ]; then
-	bash /home/ubuntu/master.sh
-	break
-else
-	sleep 1
-fi
+  if [ -f "$File" ]; then
+    echo "y" | kubeadm reset
+    sleep 10
+    bash /home/ubuntu/master.sh
+    break
+  else
+    sleep 1
+  fi
 done
 
 sed -i 's/master2/master1/g' /home/ubuntu/master.sh
 sed -i 's/master3/master1/g' /home/ubuntu/master.sh
+rm -rf /home/ubuntu/check
+rm -rf /home/ubuntu/etcd-id
+rm -rf /home/ubuntu/cert-key
 
-mkdir -p /root/.kube
+sudo mkdir -p /root/.kube
 sudo cp -i /etc/kubernetes/admin.conf /root/.kube/config
 sudo chown 0:0 /root/.kube/config
 export KUBECONFIG=/etc/kubernetes/admin.conf
