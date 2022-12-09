@@ -1,3 +1,4 @@
+
 Name:         prometheus-server
 Namespace:    default
 Labels:       app=prometheus
@@ -145,10 +146,6 @@ scrape_configs:
   kubernetes_sd_configs:
   - role: endpoints
   relabel_configs:
-  - source_labels:
-    - __meta_kubernetes_service_port_name
-    target_label: name
-    regex: http-metrics
   - source_labels:
     - __meta_kubernetes_endpoints_label_labelname
     target_label: labelname
