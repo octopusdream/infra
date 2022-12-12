@@ -1,96 +1,80 @@
-Name:         prometheus-alertmanager
-Namespace:    default
-Labels:       app=prometheus
-              app.kubernetes.io/managed-by=Helm
-              chart=prometheus-16.0.0
-              component=alertmanager
-              heritage=Helm
-              release=prometheus
-Annotations:  meta.helm.sh/release-name: prometheus
-              meta.helm.sh/release-namespace: default
-
-Data
-====
-allow-snippet-annotations:
-----
-false
-alertmanager.yml:
-----
-global:
-  slack_api_url: https://hooks.slack.com/services/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
-receivers:
-- name: k8s-monitoring
-  slack_configs:
-  - channel: '#k8s-monitoring'
-    send_resolved: true
-    text: |-
-      Description: {{ range .Alerts }}{{ .Annotations.description }}
-      {{ end }}
-    title: |-
-      Summary: {{ range .Alerts }}{{ .Annotations.summary }}
-      {{ end }}
-- name: slack-info
-  slack_configs:
-  - api_url: https://hooks.slack.com/services/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
-    channel: '#monitoring-info'
-    send_resolved: true
-    text: |-
-      Description: {{ range .Alerts }}{{ .Annotations.description }}
-      {{ end }}
-    title: |-
-      Summary: {{ range .Alerts }}{{ .Annotations.summary }}
-      {{ end }}
-- name: slack-info-once
-  slack_configs:
-  - api_url: https://hooks.slack.com/services/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
-    channel: '#monitoring-info'
-    send_resolved: true
-    text: |-
-      Description: {{ range .Alerts }}{{ .Annotations.description }}
-      {{ end }}
-    title: |-
-      Summary: {{ range .Alerts }}{{ .Annotations.summary }}
-      {{ end }}
-- name: slack-warning
-  slack_configs:
-  - api_url: https://hooks.slack.com/services/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
-    channel: '#monitoring-warning'
-    send_resolved: true
-    text: |-
-      Description: {{ range .Alerts }}{{ .Annotations.description }}
-      {{ end }}
-    title: |-
-      Summary: {{ range .Alerts }}{{ .Annotations.summary }}
-      {{ end }}
-- name: slack-error
-  slack_configs:
-  - api_url: https://hooks.slack.com/services/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
-    channel: '#monitoring-error'
-    send_resolved: true
-    text: |-
-      Description: {{ range .Alerts }}{{ .Annotations.description }}
-      {{ end }}
-    title: |-
-      Summary: {{ range .Alerts }}{{ .Annotations.summary }}
-      {{ end }}
-route:
-  receiver: k8s-monitoring
-  group_interval: 30s
-  group_wait: 10s
-  repeat_interval: 2m
-  routes:
-  - receiver: slack-info
-    matchers:
-    - severity = "info"
-  - receiver: slack-warning
-    matchers:
-    - severity = "page"
-  - receiver: slack-error
-    matchers:
-    - severity = "critical"
-  - receiver: slack-info-once
-    repeat_interval: 30m
-    matchers:
-    - severity = "info"
-
-Events:  <none>
+apiVersion: v1
+data:
+  alertmanager.yml: |
+    global:
+      slack_api_url: https://hooks.slack.com/services/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
+    receivers:
+    - name: k8s-monitoring
+      slack_configs:
+      - channel: '#k8s-monitoring'
+        send_resolved: true
+        text: |-
+          Description: {{ range .Alerts }}{{ .Annotations.description }}
+          {{ end }}
+        title: |-
+          Summary: {{ range .Alerts }}{{ .Annotations.summary }}
+          {{ end }}
+    - name: slack-info
+      slack_configs:
+      - api_url: https://hooks.slack.com/services/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
+        channel: '#monitoring-info'
+        send_resolved: true
+        text: |-
+          Description: {{ range .Alerts }}{{ .Annotations.description }}
+          {{ end }}
+        title: |-
+          Summary: {{ range .Alerts }}{{ .Annotations.summary }}
+          {{ end }}
+    - name: slack-info-once
+      slack_configs:
+      - api_url: https://hooks.slack.com/services/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
+        channel: '#monitoring-info'
+        send_resolved: true
+        text: |-
+          Description: {{ range .Alerts }}{{ .Annotations.description }}
+          {{ end }}
+        title: |-
+          Summary: {{ range .Alerts }}{{ .Annotations.summary }}
+          {{ end }}
+    - name: slack-warning
+      slack_configs:
+      - api_url: https://hooks.slack.com/services/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
+        channel: '#monitoring-warning'
+        send_resolved: true
+        text: |-
+          Description: {{ range .Alerts }}{{ .Annotations.description }}
+          {{ end }}
+        title: |-
+          Summary: {{ range .Alerts }}{{ .Annotations.summary }}
+          {{ end }}
+    - name: slack-error
+      slack_configs:
+      - api_url: https://hooks.slack.com/services/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
+        channel: '#monitoring-error'
+        send_resolved: true
+        text: |-
+          Description: {{ range .Alerts }}{{ .Annotations.description }}
+          {{ end }}
+        title: |-
+          Summary: {{ range .Alerts }}{{ .Annotations.summary }}
+          {{ end }}
+    route:
+      receiver: k8s-monitoring
+      group_interval: 30s
+      group_wait: 10s
+      repeat_interval: 2m
+      routes:
+      - receiver: slack-info
+        matchers:
+        - severity = "info"
+      - receiver: slack-warning 
+        matchers:
+        - severity = "page"
+      - receiver: slack-error
+        matchers:
+        - severity = "critical"
+      - receiver: slack-info-once
+        repeat_interval: 30m
+        matchers:
+        - severity = "info"
+  allow-snippet-annotations: 'false'
