@@ -1,100 +1,103 @@
-
 apiVersion: v1
 data:
-  alerting_rules.yml: "groups:\n- name: AllInstances\n  rules:\n  - alert: ComponentDown\n
-    \   annotations:\n      description: '{{ $labels.instance }} of job {{ $labels.job
-    }} has been down for more than 1 minute.'\n      summary: Job {{ $labels.job }}
-    down\n    expr: up == 0\n    for: 1m\n    labels:\n      severity: \"info\"\n
-    \ - alert: InstanceScaleOut\n    annotations:\n      description: Cluster has
-    \ been scale out 1 node for more than 10 seconds.\n      summary: Instance {{
-    $labels.instance }} scale out\n    expr: (sum(kube_node_info) > sum(kube_node_info
-    offset 1m))\n    for: 10s\n    labels:\n      severity: \"info\"\n  - alert: DangerZoneA\n
-    \   annotations:\n      description: Zone A has only 1 node. Perhaps zone A has
-    no worker nodes.\n      summary: needs check\n    expr: sum(up{topology_kubernetes_io_zone=~\"ap-northeast-3a\"}
-    and up{job=\"kubernetes-nodes\"}) == 1    \n    for: 1m\n    labels:\n      severity:
-    \"info\"\n  - alert: DangerZoneB\n    annotations:\n      description: Zone B
-    has only 1 node. Perhaps zone b has no worker nodes.\n      summary: needs check\n
-    \   expr: sum(up{topology_kubernetes_io_zone=~\"ap-northeast-3b\"} and up{job=\"kubernetes-nodes\"}) == 1
-    \n    for: 1m\n    labels:\n      severity: \"info\"\n  - alert: DangerZoneC\n
-    \   annotations:\n      description: Zone C has only 1 node. Perhaps zone b has
-    no worker nodes.\n      summary: needs check\n    expr: sum(up{topology_kubernetes_io_zone=~\"ap-northeast-3c\"}
-    and up{job=\"kubernetes-nodes\"}) == 1    \n    for: 1m\n    labels:\n      severity:
-    \"info\"\n  - alert: MasterDown\n    annotations:\n      description: Master node
-    down.\n      summary: needs check\n    expr: sum(up{key=\"master\"} and up{job=\"kubernetes-nodes\"})
-    < 3    \n    for: 1m\n    labels:\n      severity: \"page\"\n  - alert: ManyInstanceScaleOut\n
-    \   annotations:\n      description: Instance Scaled Out \n      summary: AutoScaler
-    capacity exceeds 50%\n    expr: sum(up{job=\"kubernetes-nodes\"})  - sum(up{key=\"master\"})
-    > (12 * 0.5)       \n    for: 1m\n    labels:\n      severity: \"info\"\n  - alert:
-    MaxInstanceScaleOut\n    annotations:\n      description: You should increase
-    the maximum scale out value or check the part where the problems occurred.  \n
-    \     summary: AutoScaler capacity reached 100% \n    expr: sum(up{job=\"kubernetes-nodes\"})
-    \ - sum(up{key=\"master\"}) > (12 - 1)       \n    for: 30s\n    labels:\n      severity:
-    \"page\"\n  - alert: NodeNotReady\n    annotations:\n      description: Node {{
-    $labels.node }} has been unready for a long time\n      summary: Kubernetes Node
-    ready {{ $labels.instance }}\n    expr: kube_node_status_condition{condition=\"Ready\",status=\"true\"}
-    == 0\n    for: 3m\n    labels:\n      severity: \"info\"\n  - alert: PodCrashLoopBackOff\n
-    \   annotations:\n      description: 'Pod {{ $labels.pod }} is crash looping VALUE
-    = {{ $value }} LABELS = {{ $labels }}'\n      summary: Kubernetes pod crash looping
-    (instance {{ $labels.instance }})\n    expr: increase(kube_pod_container_status_restarts_total[1m])
-    > 3\n    for: 2m\n    labels:\n      severity: \"info\"\n  - alert: ZoneCrashed\n
-    \   annotations:\n      description: 'Crashed Zone: {{ $labels.topology_kubernetes_io_zone
-    }}\n'\n      summary: ZoneFailed\n    expr: sum by (topology_kubernetes_io_zone)(up{topology_kubernetes_io_zone=~\"ap-northeast-3a\"})
-    == 0 or sum by (topology_kubernetes_io_zone)(up{topology_kubernetes_io_zone=~\"ap-northeast-3b\"})
-    == 0 or sum by (topology_kubernetes_io_zone)(up{topology_kubernetes_io_zone=~\"ap-northeast-3c\"})
-    == 0 \n    for: 0s\n    labels:\n      severity: \"page\"\n  - alert:
-    ScaleOutLimitation\n    annotations:\n      description: AWSAutoScaleGroup reached limit node count and unable to scale out any pod in all node.\n
-    \     summary: AutoScaler reached limitation \n    expr: sum (kube_pod_status_phase{phase=\"Pending\", namespace=\"default\", pod=~\"flask.*\"}) == 0 and sum(up{job=\"kubernetes-nodes\"}) - sum(up{key=\"master\"}) > (1)       \n
-    for: 30s\n    labels:\n      severity:
-    \"critical\"\n"
-    
-
- 
-    
- ---
- 
-   alerting_rules.yml: |
+  alerting_rules.yml: |
     groups:
     - name: AllInstances
       rules:
-      - alert: InstanceDown
-        annotations:
-          description: '{{ $labels.instance }} of job {{ $labels.job }} has been down
-            for more than 1 minute.'
-          summary: Instance {{ $labels.instance }} down
-        expr: up == 0
-        for: 1m
-        labels:
-          severity: "info"
       - alert: InstanceScaleOut
         annotations:
-          description: Cluster has been scale out 1 node for more than 10 seconds.
+          description: Cluster has  been scale out 1 node for more than 10 seconds.
           summary: Instance {{ $labels.instance }} scale out
         expr: (sum(kube_node_info) > sum(kube_node_info offset 1m))
         for: 10s
         labels:
           severity: "info"
-      - alert: ZoneA
+      - alert: ImbalancedZoneA
         annotations:
-          description: 'Zone A has only one node. Perhaps zone a has no worker nodes.'
-          summary: {{ $labels.topology_kubernetes_io_region }} needs check
-        expr: sum(up{topology_kubernetes_io_zone=~"ap-northeast-3a"} and up{job="kubernetes-nodes"}) < 3
+          description:  The number of nodes in zoneA is less than 20% of the number of nodes in all availability zones.
+          summary: ZoneA nodes imbalancing
+        expr: sum(up{topology_kubernetes_io_zone=~'ap-northeast-3a',job="kubernetes-nodes"})  <= sum(up{job="kubernetes-nodes"}) * 0.2    
         for: 1m
         labels:
-          severity: "warning"
-      - alert: ZoneB
+          severity: "info"
+      - alert: ImbalancedZoneB
         annotations:
-          description: 'Zone B has only one node. Perhaps zone b has no worker nodes.'
-          summary: {{ $labels.topology_kubernetes_io_region }} needs check
-        expr: sum(up{topology_kubernetes_io_zone=~"ap-northeast-3b"} and up{job="kubernetes-nodes"}) == 1
+          description: The number of nodes in zoneB is less than 20% of the number of nodes in all availability zones.
+          summary: ZoneB nodes imbalancing
+        expr: sum(up{topology_kubernetes_io_zone=~'ap-northeast-3b',job="kubernetes-nodes"})  <= sum(up{job="kubernetes-nodes"}) * 0.2 
         for: 1m
         labels:
-          severity: "warning"
-      - alert: ZoneC
+          severity: "info"
+      - alert: ImbalancedZoneC
         annotations:
-          description: 'Zone C has only one node. Perhaps zone a has no worker nodes.'
-          summary: {{ $labels.topology_kubernetes_io_region }} needs check
-        expr: sum(up{topology_kubernetes_io_zone=~"ap-northeast-3c"} and up{job="kubernetes-nodes"}) == 1
+          description: The number of nodes in zoneC is less than 20% of the number of nodes in all availability zones.
+          summary: ZoneC nodes imbalancing
+        expr: sum(up{topology_kubernetes_io_zone=~'ap-northeast-3c',job="kubernetes-nodes"})  <= sum(up{job="kubernetes-nodes"}) * 0.2    
         for: 1m
         labels:
-          severity: "warning"
----
+          severity: "info"
+      - alert: MasterDown
+        annotations:
+          description: Master node {{ $labels.instance }} has been down more than 1 minute. You have to fix master node for quorom.
+          summary: Master {{ $labels.instance }} down
+        expr: up{key="master"} and up{job="kubernetes-nodes"} == 0    
+        for: 1m
+        labels:
+          severity: "page"
+      - alert: MoreThanHalfOfWorkers
+        annotations:
+          description: Instance Scaled Out 
+          summary: AutoScaler capacity exceeds 50%
+        expr: sum(up{job="kubernetes-nodes", key!="master"})  > (12 * 0.5)       
+        for: 1m
+        labels:
+          severity: "info"
+      - alert: MaxInstanceScaleOut
+        annotations:
+          description: You should increase the maximum scale out value or check the part where the problems occurred.  
+          summary: AutoScaler capacity reached 100% 
+        expr: sum(up{job="kubernetes-nodes", key!="master"})  == 12       
+        for: 30s
+        labels:
+          severity: "page"
+      - alert: PodCrashLoopBackOff
+        annotations:
+          description: 'Pod {{ $labels.pod }} is crash looping VALUE = {{ $value }} LABELS = {{ $labels }}'
+          summary: Kubernetes pod crash looping (instance {{ $labels.instance }})
+        expr: increase(kube_pod_container_status_restarts_total[1m]) > 3
+        for: 2m
+        labels:
+          severity: "info"
+      - alert: ZoneCrashed
+        annotations:
+          description: 'Crashed Zone: {{ $labels.topology_kubernetes_io_zone }}'
+          summary: ZoneFailed
+        expr: sum by (topology_kubernetes_io_zone)(up{topology_kubernetes_io_zone=~"ap-northeast-3a"}) == 0 or sum by (topology_kubernetes_io_zone)(up{topology_kubernetes_io_zone=~"ap-northeast-3b"}) == 0 or sum by (topology_kubernetes_io_zone)(up{topology_kubernetes_io_zone=~"ap-northeast-3c"}) == 0 
+        for: 0s
+        labels:
+          severity: "page"
+      - alert: ScaleOutLimitation
+        annotations:
+          description: 'AWSAutoScaleGroup reached limit node count and unable to scale out any pod in all node.'
+          summary: AutoScaler reached limitation 
+        expr: sum (kube_pod_status_phase{phase="Pending", namespace="default", pod=~"flask.*"}) > 0 and sum(up{job="kubernetes-nodes", key!="master"}) == 12 
+        for: 30s
+        labels:
+          severity: "critical"
+      - alert: IncreasedHttpRequest
+        annotations:
+          description:  Http requests more than 3 times in 10 minutes
+          summary: 3X Http requests 
+        expr: sum_over_time(flask_http_request_total{status="200", job!="my-flask-app"}[10m]) * 3 < sum_over_time(flask_http_request_total{status="200", job!="my-flask-app"}[10m] offset 10m)
+        for: 1m
+        labels:
+          severity: "info"
+      - alert: UnusualHttpRequest
+        annotations:
+          description:  HTTP requests increased more than 10 times in 10 minutes
+          summary: 10X Http requests 
+        expr: sum_over_time(flask_http_request_total{status="200", job!="my-flask-app"}[10m]) * 3 < sum_over_time(flask_http_request_total{status="200", job!="my-flask-app"}[10m] offset 10m)
+        for: 1m
+        labels:
+          severity: "page"
+ 
